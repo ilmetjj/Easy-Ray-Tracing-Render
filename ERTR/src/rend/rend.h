@@ -21,6 +21,8 @@ using namespace std;
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 
+void term_vid_BW(vector<char>&);
+
 //structures
 struct ray;
 
@@ -118,8 +120,11 @@ private:
 	camera cam;
 	vector<light*> lig;
 	vector<object*> obj;
+
+	void (*move)(vector<object *> &, vector<light *> &, double);
+
 public:
-	scene(camera _cam);
+	scene(camera _cam, void (*_move)(vector<object *> &, vector<light *> &, double));
 	void set_cam(camera &c);
 	void add_obj(object &o);
 	void add_lig(light &l);

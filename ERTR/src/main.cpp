@@ -7,11 +7,20 @@
 
 using namespace std;
 
+void move(vector<object *> &obj, vector<light *> &lig, double n)
+{
+	vettore m(sin(n * 7) * 35, sin(n * 7) * 15, 5 + cos(n * 7) * 35);
+	(*lig[0]).move_to(m);
+
+	vettore m2(cos(-n * 14) * 10, sin(-n * 14) - 1, 15 + sin(-n * 14) * 10);
+	(*obj[1]).move_to(m2);
+}
+
 int main(int argc, char** argv){
 
 	camera c(vettore(0,0,-100), 38.4,21.6);
 
-	scene A(c);
+	scene A(c, move);
 
 	double n=3.25;
 

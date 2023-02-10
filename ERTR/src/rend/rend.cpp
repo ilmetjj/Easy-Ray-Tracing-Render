@@ -12,30 +12,39 @@ void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsi
 		std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 }
 
-vettore ray::point(double t){
-	return o+t*d;
+void term_vid_BW(vector<char> &scr)
+{
+	for (int i = 0; i < scr.size(); i++)
+		putchar(scr[i]);
 }
 
-entity::entity(vettore _pos):pos(_pos){}
-void entity::move(vettore m){
-	pos=pos+m;
+vettore ray::point(double t)
+{
+	return o + t * d;
+}
+
+entity::entity(vettore _pos) : pos(_pos) {}
+void entity::move(vettore m)
+{
+	pos = pos + m;
 }
 void entity::move_to(vettore m)
 {
 	pos = m;
 }
 
-camera::camera(vettore _pos, double _x , double _y):entity(_pos),x(_x),y(_y){}
-double camera::width(){return x;}
-double camera::hight(){return y;}
-ray camera::cast(double px, double py){
+camera::camera(vettore _pos, double _x, double _y) : entity(_pos), x(_x), y(_y) {}
+double camera::width() { return x; }
+double camera::hight() { return y; }
+ray camera::cast(double px, double py)
+{
 	ray r;
 	r.o = vettore(px, py, 0);
-	r.d=(vettore(px,py,0)-pos).normalize();
+	r.d = (vettore(px, py, 0) - pos).normalize();
 	return r;
 }
 
-object::object(vettore _pos, double _refl, double _scat, vettore _color):entity(_pos),refl(_refl),scat(_scat), color(_color) {}
+object::object(vettore _pos, double _refl, double _scat, vettore _color) : entity(_pos), refl(_refl), scat(_scat), color(_color) {}
 ray object::reflect(ray r)
 {
 	double t = intersect(r);
@@ -49,14 +58,16 @@ ray object::reflect(ray r)
 	s.d = (2 * Q - r.o - P);
 	return s;
 }
-double object::get_ref(){
+double object::get_ref()
+{
 	return refl;
 }
-vettore object::get_color(){
+vettore object::get_color()
+{
 	return color;
 }
 
-light::light(vettore _pos, double _i, vettore _color) : object(_pos, -1, 0, _color), i(_i), R(1){}
+light::light(vettore _pos, double _i, vettore _color) : object(_pos, -1, 0, _color), i(_i), R(1) {}
 ray light::cast(vettore p)
 {
 	ray r;
@@ -67,7 +78,7 @@ ray light::cast(vettore p)
 vettore light::shade(vettore p, vettore n)
 {
 	vettore r = (pos - p).normalize();
-	return color*((r * n) * (i*soft));
+	return color * ((r * n) * (i * soft));
 }
 double light::intersect(ray r)
 {
@@ -95,43 +106,45 @@ vettore light::normal(vettore p)
 	return (p - pos).normalize();
 }
 
-sphere::sphere(vettore _pos, double _R, double _refl, vettore _color):object(_pos, _refl, 0, _color), R(_R){}
-double sphere::intersect(ray r){
-	double a=r.d*r.d;
-	double b=2*(r.o-pos)*r.d;
-	double c=(r.o-pos)*(r.o-pos)-pow(R,2);
-	double d = pow(b,2) - 4 *a *c ;
+sphere::sphere(vettore _pos, double _R, double _refl, vettore _color) : object(_pos, _refl, 0, _color), R(_R) {}
+double sphere::intersect(ray r)
+{
+	double a = r.d * r.d;
+	double b = 2 * (r.o - pos) * r.d;
+	double c = (r.o - pos) * (r.o - pos) - pow(R, 2);
+	double d = pow(b, 2) - 4 * a * c;
 
-	if(d<0)
+	if (d < 0)
 		return 0;
-	
-	double t1 = (0-b - sqrt(d)) / (2 * a);
-	double t2 = (0-b + sqrt(d)) / (2 * a);
+
+	double t1 = (0 - b - sqrt(d)) / (2 * a);
+	double t2 = (0 - b + sqrt(d)) / (2 * a);
 
 	if (t1 * t2 < 0)
-	return t2<0?t1:t2;
+		return t2 < 0 ? t1 : t2;
 
 	if (t1 < 0 and t2 < 0)
-	return 0;
-	
-	return t1<t2?t1:t2;	
-	
+		return 0;
+
+	return t1 < t2 ? t1 : t2;
 }
-vettore sphere::normal(vettore p){
-	return (p-pos).normalize();
+vettore sphere::normal(vettore p)
+{
+	return (p - pos).normalize();
 }
 
-plane::plane(vettore _pos, vettore _N, double _refl, vettore _color) : object(_pos, _refl, 0, _color), N(_N) {
+plane::plane(vettore _pos, vettore _N, double _refl, vettore _color) : object(_pos, _refl, 0, _color), N(_N)
+{
 	N.normalize();
 }
 double plane::intersect(ray r)
 {
-	double num=(pos-r.o)*N;
-	double den=r.d*N;
-	double t=num/den;
+	double num = (pos - r.o) * N;
+	double den = r.d * N;
+	double t = num / den;
 
 	if (t < 0)
-	return 0;
+		return 0;
 
 	return t;
 }
@@ -140,12 +153,14 @@ vettore plane::normal(vettore p)
 	return N.normalize();
 }
 
-scene::scene(camera _cam):cam(_cam){}
-void scene::set_cam(camera &c){cam=c;}
-void scene::add_obj(object &o){
+scene::scene(camera _cam, void (*_move)(vector<object *> &, vector<light *> &, double)) : cam(_cam), move(_move) {}
+void scene::set_cam(camera &c) { cam = c; }
+void scene::add_obj(object &o)
+{
 	obj.push_back(&o);
 }
-void scene::add_lig(light &l){
+void scene::add_lig(light &l)
+{
 	lig.push_back(&l);
 	obj.push_back(&l);
 }
@@ -154,7 +169,7 @@ void scene::render(){
 	struct winsize w;
 	vector<char> scr;
 	for(double n=1;n>0;n+=0.001){
-		
+
 		ioctl(0, TIOCGWINSZ, &w);
 
 		vettore m(sin(n*7) * 35, sin(n*7) * 15, 5 + cos(n*7) * 35);
@@ -169,7 +184,7 @@ void scene::render(){
 		xf = -cam.width() / 2;
 
 		double yd, yi, yf;
-		yd = cam.hight()/ double(w.ws_row);  
+		yd = cam.hight()/ double(w.ws_row);
 		yi = cam.hight() / 2;
 		yf = -cam.hight() / 2;
 
@@ -238,7 +253,7 @@ void scene::render(){
 						for (int h = 0; h < lig.size(); h++)
 						{
 							ray s=(*lig[h]).cast(P);
-							
+
 							int H2=H;
 							double T2 = (*obj[H2]).intersect(s);
 							for (int k = 1; k < obj.size(); k++)
@@ -266,7 +281,7 @@ void scene::render(){
 	//					std::cout << "@" << flush;
 	//					std::cout << I << flush;
 
-						//.,-~:;= !*#$ @ 
+						//.,-~:;= !*#$ @
 						if (I < 0)
 						{
 						//	std::cout << "0" << flush;
@@ -351,8 +366,8 @@ void scene::render(){
 			putchar(scr[i]);
 		usleep(100);
 		scr.clear();
-	//	
-			
+	//
+
 	}
 }
 */
@@ -361,14 +376,10 @@ void scene::rend_img(string file, double scale, double n)
 	struct winsize w;
 	ioctl(0, TIOCGWINSZ, &w);
 
-	vettore m(sin(n * 7) * 35, sin(n * 7) * 15, 5 + cos(n * 7) * 35);
-	(*lig[0]).move_to(m);
-
-	vettore m2(cos(-n * 14) * 10, sin(-n * 14) - 1, 15 + sin(-n * 14) * 10);
-	(*obj[1]).move_to(m2);
+	move(obj, lig, n);
 
 	double xd, xi, xf;
-	xd = double(1)/scale;
+	xd = double(1) / scale;
 	xi = cam.width() / 2;
 	xf = -cam.width() / 2;
 
@@ -382,11 +393,11 @@ void scene::rend_img(string file, double scale, double n)
 	image.resize(width * height * 4);
 
 	int c_pix = 0;
-	for (int i = 0; i < height ; i++)
+	for (int i = 0; i < height; i++)
 	{
-		for (double j = 0; j < width ; j++)
+		for (double j = 0; j < width; j++)
 		{
-			ray r = cam.cast(xi-xd*j, yi-yd*i);
+			ray r = cam.cast(xi - xd * j, yi - yd * i);
 			int H = 0;
 			double T = (*obj[H]).intersect(r);
 			for (int h = 1; h < obj.size(); h++)
@@ -469,11 +480,11 @@ void scene::rend_img(string file, double scale, double n)
 								double t = (*obj[k]).intersect(s);
 								if (t > 0)
 								{
-								if (t < T2 || T2 == 0)
-								{
-									T2 = t;
-									H2 = k;
-								}
+									if (t < T2 || T2 == 0)
+									{
+										T2 = t;
+										H2 = k;
+									}
 								}
 							}
 						}
@@ -481,26 +492,17 @@ void scene::rend_img(string file, double scale, double n)
 						{
 							vettore N = (*obj[H]).normal(P);
 							vettore S = (*lig[h]).shade(P, N);
-							S=S.per((*obj[H]).get_color()/255);
+							S = S.per((*obj[H]).get_color() / 255);
 							if (S > 0)
 							{
-								I = I+S;
+								I = I + S;
 							}
 						}
 					}
-/*					if (I < 0)
-					{
-						image[4 * c_pix + 0] = 0;
-						image[4 * c_pix + 1] = 0;
-						image[4 * c_pix + 2] = 0;
-						image[4 * c_pix + 3] = 255;
-					}
-*///					else{
-						image[4 * c_pix + 0] = I.get_x() < 255 ? I.get_x() : 255;
-						image[4 * c_pix + 1] = I.get_y() < 255 ? I.get_y() : 255;
-						image[4 * c_pix + 2] = I.get_z() < 255 ? I.get_z() : 255;
-						image[4 * c_pix + 3] = 255;
-//					}
+					image[4 * c_pix + 0] = I.get_x() < 255 ? I.get_x() : 255;
+					image[4 * c_pix + 1] = I.get_y() < 255 ? I.get_y() : 255;
+					image[4 * c_pix + 2] = I.get_z() < 255 ? I.get_z() : 255;
+					image[4 * c_pix + 3] = 255;
 				}
 			}
 
