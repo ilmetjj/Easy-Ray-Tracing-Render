@@ -18,6 +18,7 @@
 using namespace std;
 
 #define soft 0.5F
+#define term_filt 0.05f
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 
@@ -61,7 +62,7 @@ private:
 public:
 	camera(vettore _pos=vettore(0,0,-1), double _x=8, double _y=5);
 	double width();
-	double hight();
+	double height();
 	ray cast(double px, double py);
 };
 
@@ -118,13 +119,19 @@ private:
 	camera cam;
 	vector<light*> lig;
 	vector<object*> obj;
+
+	void (*move)(vector<object *> &, vector<light *> &, double);
+
+	vector<vettore> render(int x, int y);
+
 public:
-	scene(camera _cam);
+	scene(camera _cam, void (*_move)(vector<object *> &, vector<light *> &, double));
 	void set_cam(camera &c);
 	void add_obj(object &o);
 	void add_lig(light &l);
-//	void render();
+	
 	void rend_img(string file="render.png", double scale=100, double n=1);
+	void rend_term(int slp_t=100, double dn=0.01, double nf=10, double ni=0);
 };
 
 #endif
