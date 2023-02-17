@@ -50,17 +50,23 @@ struct ray{
 class entity{
 protected:
 	vettore pos;
+	vettore dx, dy, dz;
 public:
-	entity(vettore _pos = vettore(0, 0, 0));
+	entity(vettore _pos = vettore(0, 0, 0), vettore _dx=vettore(1,0,0), vettore _dy=vettore(0,1,0), vettore _dz=vettore(0,0,1));
 	void move(vettore m);
 	void move_to(vettore m);
+	void rotate_abs(vettore r);
+	void rotate_to(vettore _dx, vettore _dy, vettore _dz);
+	void point_to(vettore p);
+
+	vettore get_pos();
 };
 
 class camera : public entity{
 private:
-	double x, y;
+	double lx, ly, df;
 public:
-	camera(vettore _pos=vettore(0,0,-1), double _x=8, double _y=5);
+	camera(vettore _pos=vettore(0,0,-1), double _lx=8, double _ly=5, double _df=100);
 	double width();
 	double height();
 	ray cast(double px, double py);
@@ -120,12 +126,12 @@ private:
 	vector<light*> lig;
 	vector<object*> obj;
 
-	void (*move)(vector<object *> &, vector<light *> &, double);
+	void (*move)(camera &, vector<object *> &, vector<light *> &, double);
 
 	vector<vettore> render(int x, int y);
 
 public:
-	scene(camera _cam, void (*_move)(vector<object *> &, vector<light *> &, double));
+	scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double));
 	void set_cam(camera &c);
 	void add_obj(object &o);
 	void add_lig(light &l);
