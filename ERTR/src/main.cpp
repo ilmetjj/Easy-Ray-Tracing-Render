@@ -18,7 +18,6 @@ void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
 	vettore m3(20*sin(n*5),20*cos(n*5),-100);
 	cam.move_to(m3);
 	cam.point_to(obj[0]->get_pos());
-//	cam.rotate_abs(vettore(0,0,0)-m3);
 }
 
 int main(/*int argc, char** argv*/){
