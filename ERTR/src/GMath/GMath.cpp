@@ -95,6 +95,9 @@ vettore vettore::operator%(const vettore obj) const
 {
 	return vettore((y * obj.z - z * obj.y), (z * obj.x - x * obj.z), (x * obj.y - y * obj.x));
 }
+vettore vettore::operator*(const vettore v[3]) const {
+	return vettore(x * v[0].x + y * v[0].y + z * v[0].z, x *v[1].x + y * v[1].y + z * v[1].z, x *v[2].x + y * v[2].y + z * v[2].z);
+}
 
 vettore vettore::per(vettore obj){
 	return vettore(x*obj.x,y*obj.y,z*obj.z);
@@ -215,6 +218,11 @@ vettore vettore::dir() const
 }
 
 vettore vettore::normalize(){
-	*this = dir();
+	*this = *this/mod();
 	return *this;
+}
+
+vettore normalize(vettore v){
+	v=v/v.mod();
+	return v;
 }

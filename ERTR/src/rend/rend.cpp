@@ -17,7 +17,11 @@ vettore ray::point(double t)
 	return o + t * d;
 }
 
-entity::entity(vettore _pos) : pos(_pos) {}
+entity::entity(vettore _pos , vettore _dx, vettore _dy, vettore _dz):pos(_pos), dz(_dz), dy(_dy), dx(_dx) {
+	dx.normalize();
+	dz=normalize(dx%dy);
+	dy=normalize(dz%dx);
+}
 void entity::move(vettore m)
 {
 	pos = pos + m;
@@ -26,15 +30,58 @@ void entity::move_to(vettore m)
 {
 	pos = m;
 }
+void entity::rotate_abs(vettore r){
+	//r(r arround x, r arround y, r arround z)
+	if(r.get_x()!=0){
+		vettore rx[3]={(1,0,0),(0,cos(r.get_x()),-sin(r.get_x())),(0,sin(r.get_x()),cos(r.get_x()))};
+		dx=dx*rx;
+		dy=dy*rx;
+		dz=dz*rx;
+	}
+	if (r.get_y() != 0)
+	{
+		vettore ry[3] = {(cos(r.get_y()), 0, sin(r.get_y())), (0, 1, 0), (-sin(r.get_y()), 0, cos(r.get_y()))};
+		dx = dx * ry;
+		dy = dy * ry;
+		dz = dz * ry;
+	}
+	if (r.get_z() != 0)
+	{
+		vettore rz[3] = {(cos(r.get_z()), -sin(r.get_z()), 0), (sin(r.get_z()), cos(r.get_z()), 0), (0, 0, 1)};
+		dx = dx * rz;
+		dy = dy * rz;
+		dz = dz * rz;
+	}
 
-camera::camera(vettore _pos, double _x, double _y) : entity(_pos), x(_x), y(_y) {}
-double camera::width() { return x; }
-double camera::height() { return y; }
+	//NOT NECESSARY
+	dx.normalize();
+	dz = normalize(dx % dy);
+	dy = normalize(dz % dx);
+}
+void entity::rotate_to(vettore _dx, vettore _dy, vettore _dz)
+{
+	dx=_dx; dy=_dy; dz=_dz;
+}
+void entity::point_to(vettore p){
+	dz = normalize(p - pos);
+	dx = normalize(dy % dz);
+	dy = normalize(dz % dx);
+
+}
+
+vettore entity::get_pos(){return pos;}
+
+camera::camera(vettore _pos, double _lx, double _ly, double _df) : entity(_pos), lx(_lx), ly(_ly), df(_df) {
+	rotate_to(vettore(1,0,0), vettore(0,1,0), vettore(0,0,1));
+}
+double camera::width() { return lx; }
+double camera::height() { return ly; }
 ray camera::cast(double px, double py)
 {
 	ray r;
-	r.o = vettore(px, py, 0);
-	r.d = (vettore(px, py, 0) - pos).normalize();
+
+	r.o= pos + dz*df + dx*px +dy*py;
+	r.d=normalize(r.o-pos);
 	return r;
 }
 
@@ -147,7 +194,7 @@ vettore plane::normal(vettore p)
 	return N.normalize();
 }
 
-scene::scene(camera _cam, void (*_move)(vector<object *> &, vector<light *> &, double)) : cam(_cam), move(_move) {}
+scene::scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double)) : cam(_cam), move(_move) {}
 void scene::set_cam(camera &c) { cam = c; }
 void scene::add_obj(object &o)
 {
@@ -280,7 +327,7 @@ vector<vettore> scene::render(int width, int height){
 
 void scene::rend_img(string file, double scale, double n)
 {
-	move(obj, lig, n);
+	move(cam, obj, lig, n);
 
 	unsigned width = cam.width() * scale, height = cam.height() * scale;
 	std::vector<unsigned char> image;
@@ -306,7 +353,7 @@ void scene::rend_term(int slp_t, double dn, double nf, double ni){
 	{
 		usleep(slp_t);
 
-		move(obj, lig, n);
+		move(cam, obj, lig, n);
 
 		ioctl(0, TIOCGWINSZ, &w);
 

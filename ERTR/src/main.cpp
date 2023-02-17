@@ -7,18 +7,23 @@
 
 using namespace std;
 
-void move(vector<object *> &obj, vector<light *> &lig, double n)
+void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
 {
 	vettore m(sin(n * 7) * 35, sin(n * 7) * 15, 5 + cos(n * 7) * 35);
 	(*lig[0]).move_to(m);
 
 	vettore m2(cos(-n * 14) * 10, sin(-n * 14) - 1, 15 + sin(-n * 14) * 10);
 	(*obj[1]).move_to(m2);
+
+	vettore m3(20*sin(n*5),20*cos(n*5),-100);
+	cam.move_to(m3);
+	cam.point_to(obj[0]->get_pos());
+//	cam.rotate_abs(vettore(0,0,0)-m3);
 }
 
 int main(/*int argc, char** argv*/){
 
-	camera c(vettore(0,0,-100), 38.4,21.6);
+	camera c(vettore(0,0,-100), 38.4,21.6, 100);
 
 	scene A(c, move);
 
@@ -38,12 +43,12 @@ int main(/*int argc, char** argv*/){
 	A.add_lig(l2);
 	A.add_lig(l3);
 	
-	A.rend_term(100, 0.001, 1, 0);
+//	A.rend_term(100, 0.001, 1, 0);
 	
-	system("mkdir rendering2");
-	for(float i=0; i<M_PI; i+=0.05){
-		string file="rendering2/image"+std::to_string(i)+".png";
-		A.rend_img(file, 400, i);
+	system("mkdir rendering3");
+	for(float i=0; i<M_PI*5; i+=0.005){
+		string file="rendering3/image"+std::to_string(i)+".png";
+		A.rend_img(file, 25, i);
 	}
 
 

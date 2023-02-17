@@ -32,6 +32,7 @@ public:
 	vettore operator/(double n) const;
 	double operator*(const vettore obj) const;
 	vettore operator%(const vettore obj) const;
+	vettore operator*(const vettore v[3])const;
 
 	vettore per(vettore obj);
 
@@ -51,6 +52,7 @@ public:
 
 	vettore dir() const;
 	vettore normalize();
+	friend vettore normalize(vettore);
 };
 
 #endif
