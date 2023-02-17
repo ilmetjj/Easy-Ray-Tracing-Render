@@ -225,10 +225,10 @@ vector<vettore> scene::render(int width, int height){
 		{
 			ray r = cam.cast(xi - xd * j, yi - yd * i);
 			int H = 0;
-			double T = (*obj[H]).intersect(r);
+			double T = obj[H]->intersect(r);
 			for (int h = 1; h < obj.size(); h++)
 			{
-				double t = (*obj[h]).intersect(r);
+				double t = obj[h]->intersect(r);
 				if (t > 0)
 				{
 					if (t < T || T == 0)
@@ -248,15 +248,15 @@ vector<vettore> scene::render(int width, int height){
 				bool ok = true;
 
 				int c_r = 0;
-				while ((*obj[H]).get_ref() > 0 and c_r < 15)
+				while (obj[H]->get_ref() > 0 and c_r < 15)
 				{
 					c_r++;
-					r = (*obj[H]).reflect(r);
+					r = obj[H]->reflect(r);
 					T = 0;
 					int Hi = H;
 					for (int h = 1; h < obj.size(); h++)
 					{
-						double t = (*obj[h]).intersect(r);
+						double t = obj[h]->intersect(r);
 						if (t > 0 and h != Hi)
 						{
 							if (t < T || T == 0)
@@ -274,10 +274,10 @@ vector<vettore> scene::render(int width, int height){
 					}
 				}
 
-				if ((*obj[H]).get_ref() < 0)
+				if (obj[H]->get_ref() < 0)
 				{
 					ok = false;
-					vec.push_back((*obj[H]).get_color());
+					vec.push_back(obj[H]->get_color());
 				}
 
 				if (ok)
@@ -286,15 +286,15 @@ vector<vettore> scene::render(int width, int height){
 					vettore P = r.point(T);
 					for (int h = 0; h < lig.size(); h++)
 					{
-						ray s = (*lig[h]).cast(P);
+						ray s = lig[h]->cast(P);
 
 						int H2 = H;
-						double T2 = (*obj[H2]).intersect(s);
+						double T2 = obj[H2]->intersect(s);
 						for (int k = 1; k < obj.size(); k++)
 						{
 							if (obj[k] != lig[h])
 							{
-								double t = (*obj[k]).intersect(s);
+								double t = obj[k]->intersect(s);
 								if (t > 0)
 								{
 									if (t < T2 || T2 == 0)
@@ -307,9 +307,9 @@ vector<vettore> scene::render(int width, int height){
 						}
 						if (H2 == H)
 						{
-							vettore N = (*obj[H]).normal(P);
-							vettore S = (*lig[h]).shade(P, N);
-							S = S.per((*obj[H]).get_color() / 255);
+							vettore N = obj[H]->normal(P);
+							vettore S = lig[h]->shade(P, N);
+							S = S.per(obj[H]->get_color() / 255);
 							if (S > 0)
 							{
 								I = I + S;

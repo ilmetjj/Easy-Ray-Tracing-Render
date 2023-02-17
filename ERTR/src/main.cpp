@@ -10,10 +10,10 @@ using namespace std;
 void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
 {
 	vettore m(sin(n * 7) * 35, sin(n * 7) * 15, 5 + cos(n * 7) * 35);
-	(*lig[0]).move_to(m);
+	lig[0]->move_to(m);
 
 	vettore m2(cos(-n * 14) * 10, sin(-n * 14) - 1, 15 + sin(-n * 14) * 10);
-	(*obj[1]).move_to(m2);
+	obj[1]->move_to(m2);
 
 	vettore m3(20*sin(n*5),20*cos(n*5),-100);
 	cam.move_to(m3);
