@@ -44,10 +44,10 @@ int main(/*int argc, char** argv*/){
 	
 //	A.rend_term(100, 0.001, 1, 0);
 	
-	system("mkdir rendering3");
-	for(float i=0; i<M_PI*5; i+=0.005){
-		string file="rendering3/image"+std::to_string(i)+".png";
-		A.rend_img(file, 25, i);
+	system("mkdir rendering");
+	for(float i=0; i<M_PI*5; i+=0.5){
+		string file="rendering/image"+std::to_string(i)+".png";
+		A.rend_img(file, 100, i);
 	}
 
 
