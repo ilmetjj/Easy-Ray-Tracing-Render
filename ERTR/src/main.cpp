@@ -52,13 +52,13 @@ int main(/*int argc, char** argv*/){
 	A.add_lig(l2);
 	A.add_lig(l3);
 	
-	A.rend_term(100, 0.001, 1, 0);
+	A.rend_term(200, 0.001, 3, 0);
 	
 	system("mkdir rendering2");
 	//for(float i=0; i<M_PI; i+=0.005){
 	for(float i=0; i<M_PI; i+=0.05){
 		string file="rendering2/image"+std::to_string(i)+".png";
-		A.rend_img(file, 400, i);
+		A.rend_img(file, 200, i);
 		cout<<i<<" "<<flush;
 	}
 

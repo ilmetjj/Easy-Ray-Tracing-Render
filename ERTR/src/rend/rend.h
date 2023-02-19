@@ -18,7 +18,7 @@
 using namespace std;
 
 #define soft 0.5F
-#define term_filt 0.05f
+#define term_filt 0.01f
 #define sun_appr 0.9f
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
