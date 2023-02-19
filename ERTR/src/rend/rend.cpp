@@ -2,8 +2,9 @@
 
 using namespace std;
 
-void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height)
-{
+/*Image function*/
+
+void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height){
 	// Encode the image
 	unsigned error = lodepng::encode(filename, image, width, height);
 
@@ -12,117 +13,173 @@ void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsi
 		std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 }
 
-vettore ray::point(double t)
-{
+/*Ray*/
+ray::ray(vettore _o, vettore _d):o(_o), d(_d){
+	d.normalize();
+}
+vettore ray::point(double t){
 	return o + t * d;
 }
 
-entity::entity(vettore _pos , vettore _dx, vettore _dy, vettore _dz):pos(_pos), dz(_dz), dy(_dy), dx(_dx) {
+/*Entity*/
+
+entity::entity(vettore _pos , vettore _dx, vettore _dy, vettore _dz):pos(_pos), dx(_dx), dy(_dy), dz(_dz) {
 	dx.normalize();
 	dz=normalize(dx%dy);
 	dy=normalize(dz%dx);
 }
-void entity::move(vettore m)
-{
+void entity::move(vettore m){
 	pos = pos + m;
 }
-void entity::move_to(vettore m)
-{
+void entity::move_to(vettore m){
 	pos = m;
 }
 void entity::rotate_abs(vettore r){
-	//r(r arround x, r arround y, r arround z)
 	if(r.get_x()!=0){
-		vettore rx[3]={(1,0,0),(0,cos(r.get_x()),-sin(r.get_x())),(0,sin(r.get_x()),cos(r.get_x()))};
+		vettore rx[3]={vettore(1,0,0),vettore(0,cos(r.get_x()),-sin(r.get_x())),vettore(0,sin(r.get_x()),cos(r.get_x()))};
 		dx=dx*rx;
 		dy=dy*rx;
 		dz=dz*rx;
 	}
 	if (r.get_y() != 0)
 	{
-		vettore ry[3] = {(cos(r.get_y()), 0, sin(r.get_y())), (0, 1, 0), (-sin(r.get_y()), 0, cos(r.get_y()))};
+		vettore ry[3] = {vettore(cos(r.get_y()), 0, sin(r.get_y())), vettore(0, 1, 0), vettore(-sin(r.get_y()), 0, cos(r.get_y()))};
 		dx = dx * ry;
 		dy = dy * ry;
 		dz = dz * ry;
 	}
 	if (r.get_z() != 0)
 	{
-		vettore rz[3] = {(cos(r.get_z()), -sin(r.get_z()), 0), (sin(r.get_z()), cos(r.get_z()), 0), (0, 0, 1)};
+		vettore rz[3] = {vettore(cos(r.get_z()), -sin(r.get_z()), 0), vettore(sin(r.get_z()), cos(r.get_z()), 0), vettore(0, 0, 1)};
 		dx = dx * rz;
 		dy = dy * rz;
 		dz = dz * rz;
 	}
 
-	//NOT NECESSARY
 	dx.normalize();
 	dz = normalize(dx % dy);
 	dy = normalize(dz % dx);
 }
-void entity::rotate_to(vettore _dx, vettore _dy, vettore _dz)
-{
+void entity::rotate_to(vettore _dx, vettore _dy, vettore _dz){
 	dx=_dx; dy=_dy; dz=_dz;
 }
-void entity::point_to(vettore p){
+void entity::point_to(vettore p, vettore up){
 	dz = normalize(p - pos);
-	dx = normalize(dy % dz);
+	dx = normalize(up % dz);
 	dy = normalize(dz % dx);
-
 }
 
 vettore entity::get_pos(){return pos;}
+vettore entity::get_dx(){return dx;}
+vettore entity::get_dy(){return dy;}
+vettore entity::get_dz(){return dz;}
 
-camera::camera(vettore _pos, double _lx, double _ly, double _df) : entity(_pos), lx(_lx), ly(_ly), df(_df) {
-	rotate_to(vettore(1,0,0), vettore(0,1,0), vettore(0,0,1));
-}
-double camera::width() { return lx; }
-double camera::height() { return ly; }
-ray camera::cast(double px, double py)
-{
+/*Camera*/
+
+camera::camera(double _lx, double _ly, double _df, entity e): entity(e), lx(_lx), ly(_ly), df(_df){}
+double camera::width(){return lx;}
+double camera::height(){return ly;}
+double camera::focal(){return df;}
+
+ray camera::cast(double px, double py){
 	ray r;
 
 	r.o= pos + dz*df + dx*px +dy*py;
 	r.d=normalize(r.o-pos);
+	
 	return r;
 }
 
-object::object(vettore _pos, double _refl, double _scat, vettore _color) : entity(_pos), refl(_refl), scat(_scat), color(_color) {}
-ray object::reflect(ray r)
-{
-	double t = intersect(r);
-	vettore P = r.point(t);
-	vettore n = normal(P);
+
+
+/*Light*/
+
+light::light(vettore _color, double _I, entity e):entity(e), color(_color), I(_I){}
+
+double light::get_I(){return I;}
+vettore light::get_color(){return color;}
+
+/*L_point*/
+
+l_point::l_point(double _R, vettore _color, double _I, entity e):light(_color, _I, e), R(_R){}
+
+ray l_point::cast(vettore p){
+	ray r(pos);
+	r.d = normalize(p - pos);
+	return r;
+}
+double l_point::intersect(ray r){
+	double a = r.d * r.d;
+	double b = 2 * (r.o - pos) * r.d;
+	double c = (r.o - pos) * (r.o - pos) - pow(R, 2);
+	double d = pow(b, 2) - 4 * a * c;
+
+	if (d < 0)
+		return 0;
+
+	double t1 = (0 - b - sqrt(d)) / (2 * a);
+	double t2 = (0 - b + sqrt(d)) / (2 * a);
+
+	if (t1 * t2 < 0)
+		return t2 < 0 ? t1 : t2;
+
+	if (t1 < 0 and t2 < 0)
+		return 0;
+
+	return t1 < t2 ? t1 : t2;
+}
+vettore l_point::shade(vettore p, vettore n){
+	vettore r = (pos - p).normalize();
+	return color * ((r * n) * (I * soft));
+}
+
+/*Sun*/
+
+sun::sun(vettore _angle, vettore _color, double _I, entity e):light(_color, _I, e), angle(_angle){
+	angle.normalize();
+}
+
+ray sun::cast(vettore p){
+	ray r;
+	r.o=(p+angle*1e4);
+	r.d=angle;
+	return r;
+}
+double sun::intersect(ray r){
+	if(r.d.normalize()*angle>sun_appr){
+		return 1e4;
+	}
+	else
+		return 0;
+}
+vettore sun::shade(vettore p, vettore n){
+	return color * ((angle * n) * (I * soft));
+}
+/*Object*/
+
+object::object(vettore _color, double _refl, double _opac, double _emit, entity e): entity(e), color(_color), refl(_refl), opac(_opac), emit(_emit){}
+ray object::reflect(ray r){
+	vettore P = r.point(intersect(r));
+	vettore n = normal(r);
+	double t;
 
 	t = (n * (r.o - P)) / (n * n);
 	vettore Q = P + (n * t);
-	ray s;
-	s.o = P;
+
+	ray s(P);
 	s.d = (2 * Q - r.o - P);
 	return s;
 }
-double object::get_ref()
-{
-	return refl;
-}
-vettore object::get_color()
-{
-	return color;
-}
 
-light::light(vettore _pos, double _i, vettore _color) : object(_pos, -1, 0, _color), i(_i), R(1) {}
-ray light::cast(vettore p)
-{
-	ray r;
-	r.o = pos;
-	r.d = (p - pos).normalize();
-	return r;
-}
-vettore light::shade(vettore p, vettore n)
-{
-	vettore r = (pos - p).normalize();
-	return color * ((r * n) * (i * soft));
-}
-double light::intersect(ray r)
-{
+double object::get_refl(){return refl;}
+double object::get_opac(){return opac;}
+double object::get_emit(){return emit;}
+vettore object::get_color(){return color;}
+
+/*Sphere*/
+
+sphere::sphere(double _R, vettore _color, double _refl, double _opac, double _emit, entity e):object(_color, _refl, _opac, _emit, e), R(_R){}
+double sphere::intersect(ray r){
 	double a = r.d * r.d;
 	double b = 2 * (r.o - pos) * r.d;
 	double c = (r.o - pos) * (r.o - pos) - pow(R, 2);
@@ -142,44 +199,17 @@ double light::intersect(ray r)
 
 	return t1 < t2 ? t1 : t2;
 }
-vettore light::normal(vettore p)
-{
+vettore sphere::normal(ray r){
+	vettore p=r.point(intersect(r));
 	return (p - pos).normalize();
 }
 
-sphere::sphere(vettore _pos, double _R, double _refl, vettore _color) : object(_pos, _refl, 0, _color), R(_R) {}
-double sphere::intersect(ray r)
-{
-	double a = r.d * r.d;
-	double b = 2 * (r.o - pos) * r.d;
-	double c = (r.o - pos) * (r.o - pos) - pow(R, 2);
-	double d = pow(b, 2) - 4 * a * c;
+/*Plane*/
 
-	if (d < 0)
-		return 0;
-
-	double t1 = (0 - b - sqrt(d)) / (2 * a);
-	double t2 = (0 - b + sqrt(d)) / (2 * a);
-
-	if (t1 * t2 < 0)
-		return t2 < 0 ? t1 : t2;
-
-	if (t1 < 0 and t2 < 0)
-		return 0;
-
-	return t1 < t2 ? t1 : t2;
-}
-vettore sphere::normal(vettore p)
-{
-	return (p - pos).normalize();
-}
-
-plane::plane(vettore _pos, vettore _N, double _refl, vettore _color) : object(_pos, _refl, 0, _color), N(_N)
-{
+plane::plane(vettore _N, vettore _color, double _refl, double _opac, double _emit, entity e):object(_color, _refl, _opac, _emit, e), N(_N){
 	N.normalize();
 }
-double plane::intersect(ray r)
-{
+double plane::intersect(ray r){
 	double num = (pos - r.o) * N;
 	double den = r.d * N;
 	double t = num / den;
@@ -189,22 +219,16 @@ double plane::intersect(ray r)
 
 	return t;
 }
-vettore plane::normal(vettore p)
-{
+vettore plane::normal(ray r){
 	return N.normalize();
 }
 
+/*Scene*/
+
 scene::scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double)) : cam(_cam), move(_move) {}
-void scene::set_cam(camera &c) { cam = c; }
-void scene::add_obj(object &o)
-{
-	obj.push_back(&o);
-}
-void scene::add_lig(light &l)
-{
-	lig.push_back(&l);
-	obj.push_back(&l);
-}
+void scene::set_cam(camera &c) {cam = c;}
+void scene::add_obj(object &o){obj.push_back(&o);}
+void scene::add_lig(light &l){lig.push_back(&l);}
 
 vector<vettore> scene::render(int width, int height){
 
@@ -226,12 +250,12 @@ vector<vettore> scene::render(int width, int height){
 			ray r = cam.cast(xi - xd * j, yi - yd * i);
 			int H = 0;
 			double T = obj[H]->intersect(r);
-			for (int h = 1; h < obj.size(); h++)
+			for (int h = 0; h < obj.size(); h++)
 			{
 				double t = obj[h]->intersect(r);
 				if (t > 0)
 				{
-					if (t < T || T == 0)
+					if (t < T || T <= 0)
 					{
 						T = t;
 						H = h;
@@ -248,18 +272,18 @@ vector<vettore> scene::render(int width, int height){
 				bool ok = true;
 
 				int c_r = 0;
-				while (obj[H]->get_ref() > 0 and c_r < 15)
+				while (obj[H]->get_refl() > 0 and c_r < 15)
 				{
 					c_r++;
 					r = obj[H]->reflect(r);
 					T = 0;
 					int Hi = H;
-					for (int h = 1; h < obj.size(); h++)
+					for (int h = 0; h < obj.size(); h++)
 					{
 						double t = obj[h]->intersect(r);
 						if (t > 0 and h != Hi)
 						{
-							if (t < T || T == 0)
+							if (t < T || T <= 0)
 							{
 								T = t;
 								H = h;
@@ -274,7 +298,7 @@ vector<vettore> scene::render(int width, int height){
 					}
 				}
 
-				if (obj[H]->get_ref() < 0)
+				if (obj[H]->get_refl() < 0)
 				{
 					ok = false;
 					vec.push_back(obj[H]->get_color());
@@ -290,27 +314,24 @@ vector<vettore> scene::render(int width, int height){
 
 						int H2 = H;
 						double T2 = obj[H2]->intersect(s);
-						for (int k = 1; k < obj.size(); k++)
+						for (int k = 0; k < obj.size(); k++)
 						{
-							if (obj[k] != lig[h])
+							double t = obj[k]->intersect(s);
+							if (t > 0)
 							{
-								double t = obj[k]->intersect(s);
-								if (t > 0)
+								if (t < T2 || T2 <= 0)
 								{
-									if (t < T2 || T2 == 0)
-									{
-										T2 = t;
-										H2 = k;
-									}
+									T2 = t;
+									H2 = k;
 								}
 							}
 						}
 						if (H2 == H)
 						{
-							vettore N = obj[H]->normal(P);
+							vettore N = obj[H]->normal(r);
 							vettore S = lig[h]->shade(P, N);
 							S = S.per(obj[H]->get_color() / 255);
-							if (S > 0)
+							if (S.get_x()>=0 and S.get_y()>=0 and S.get_z()>=0)
 							{
 								I = I + S;
 							}

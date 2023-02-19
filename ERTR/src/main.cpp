@@ -15,20 +15,31 @@ void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
 	vettore m2(cos(-n * 14) * 10, sin(-n * 14) - 1, 15 + sin(-n * 14) * 10);
 	obj[1]->move_to(m2);
 
-	vettore m3(20*sin(n*5),20*cos(n*5),-100);
+	vettore m3(30*sin(n*5),20*cos(n*5),-100);
 	cam.move_to(m3);
 	cam.point_to(obj[0]->get_pos());
 }
 
 int main(/*int argc, char** argv*/){
 
-	camera c(vettore(0,0,-100), 38.4,21.6, 100);
+	camera c(38.4,21.6,100);
 
 	scene A(c, move);
 
-	sphere s(vettore(0, 0, 15), 4, 1), s2(vettore(5, 2, 15), 2, 0, vettore(189,50,110)), s3(vettore(7, 4, 17), 1, 0, vettore(25,148,187));
-	light l(vettore(10, 10, 15), 2, vettore(255,255,255));
-	plane p(vettore(0,0,100),vettore(0,0,-1),1), p2(vettore(0,-20,0), vettore(0,1,0), 0, vettore(109,87,123));
+	sphere 
+	s(4, vettore(0,0,0), 1, 0, 0, entity(vettore(0,0,15))),
+	s2(2, vettore(189,50,110), 0, 1, 0, entity(vettore(5,2,15))),
+	s3(1, vettore(25,148,187), 0, 1, 0, entity(vettore(7,4,17)));
+
+	plane
+	p(vettore(0,0,-1),vettore(0,0,0), 1, 0, 0, entity(vettore(0,0,100))),
+	p2(vettore(0,1,0),vettore(109,87,123), 0, 1, 0, entity(vettore(0,-20,0)));
+
+	l_point
+	l(1,vettore(255,255,255),2.5,entity(vettore(10,10,15))),
+	l1(1,vettore(255,0,0),1.5,entity(vettore(-50,50,0))),
+	l2(1,vettore(0,255,0),1.5,entity(vettore(40,50,10))),
+	l3(1,vettore(0,0,255),1.5,entity(vettore(-10,50,50)));
 
 	A.add_obj(s);
 	A.add_obj(s2);
@@ -37,20 +48,19 @@ int main(/*int argc, char** argv*/){
 	A.add_obj(s3);
 	A.add_obj(p2);
 
-	light l1(vettore(-50, 50, 0), 1, vettore(255, 0, 0)), l2(vettore(40, 50, 10), 1, vettore(0, 255, 0)), l3(vettore(-10, 50, 50), 1, vettore(0, 0, 255));
 	A.add_lig(l1);
 	A.add_lig(l2);
 	A.add_lig(l3);
 	
-//	A.rend_term(100, 0.001, 1, 0);
+	A.rend_term(100, 0.001, 1, 0);
 	
-	system("mkdir rendering");
-	for(float i=0; i<M_PI*5; i+=0.5){
-		string file="rendering/image"+std::to_string(i)+".png";
-		A.rend_img(file, 100, i);
+	system("mkdir rendering2");
+	//for(float i=0; i<M_PI; i+=0.005){
+	for(float i=0; i<M_PI; i+=0.05){
+		string file="rendering2/image"+std::to_string(i)+".png";
+		A.rend_img(file, 400, i);
+		cout<<i<<" "<<flush;
 	}
-
-
 
 	return 0;
 }

@@ -19,11 +19,13 @@ using namespace std;
 
 #define soft 0.5F
 #define term_filt 0.05f
+#define sun_appr 0.9f
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 
 //structures
 struct ray;
+//	struct triangle;
 
 //basic entity
 class entity;
@@ -33,9 +35,14 @@ class camera;
 class light;
 class object;
 
+//lights
+class l_point;
+class sun;
+
 //objects
 class sphere;
 class plane;
+//	class mesh;
 
 //scene
 class scene;
@@ -44,8 +51,19 @@ class scene;
 struct ray{
 	vettore o;
 	vettore d;
+	ray(vettore _o=vettore(0,0,0), vettore _d=vettore(1,1,1));
 	vettore point(double t);
 };
+
+/*
+struct triangle{
+	vettore a, b, c;
+	vettore n;
+	bool parallel();
+	bool do_intersect();
+	vettore intersect();
+};
+*/
 
 class entity{
 protected:
@@ -53,75 +71,134 @@ protected:
 	vettore dx, dy, dz;
 public:
 	entity(vettore _pos = vettore(0, 0, 0), vettore _dx=vettore(1,0,0), vettore _dy=vettore(0,1,0), vettore _dz=vettore(0,0,1));
+	
 	void move(vettore m);
 	void move_to(vettore m);
 	void rotate_abs(vettore r);
 	void rotate_to(vettore _dx, vettore _dy, vettore _dz);
-	void point_to(vettore p);
+	void point_to(vettore p, vettore up=vettore(0,1,0));
 
 	vettore get_pos();
+	vettore get_dx();
+	vettore get_dy();
+	vettore get_dz();
 };
 
 class camera : public entity{
-private:
+protected:
 	double lx, ly, df;
 public:
-	camera(vettore _pos=vettore(0,0,-1), double _lx=8, double _ly=5, double _df=100);
+	camera(double _lx=8, double _ly=5, double _df=100, entity e=entity(vettore(0,0,-100), vettore(1,0,0), vettore(0,1,0), vettore(0,0,1)));
+
 	double width();
 	double height();
+	double focal();
+
 	ray cast(double px, double py);
+};
+
+class light : public entity
+{
+protected:
+	vettore color;
+	double I;
+
+public:
+	light(vettore _color=vettore(255,255,255), double _I=100, entity e=entity());
+	
+	virtual ray cast(vettore p)=0;
+	virtual double intersect(ray r)=0;
+	virtual vettore shade(vettore p, vettore n)=0;
+
+	double get_I();
+	vettore get_color();
+};
+
+class l_point : public light
+{
+protected:
+	double R;
+public:
+	l_point(double _R=1, vettore _color=vettore(255,255,255), double _I=100, entity e=entity());
+
+	ray cast(vettore p);
+	double intersect(ray r);
+	vettore shade(vettore p, vettore n);
+};
+
+class sun : public light
+{
+protected:
+	vettore angle;
+public:
+	sun(vettore _angle=vettore(-1,-1,-1), vettore _color=vettore(255,255,255), double _I=100, entity e=entity());
+
+	ray cast(vettore p);
+	double intersect(ray r);
+	vettore shade(vettore p, vettore n);
 };
 
 class object : public entity
 {
 protected:
-	double refl, scat;
+	double refl, opac, emit;
 	vettore color;
 
 public:
-	object(vettore _pos=vettore(0,0,1), double refl=0, double scat=0, vettore _color=vettore(255,255,255));
+	object(vettore _color=vettore(255,255,255), double _refl=0, double _opac=0, double _emit=0, entity e=entity());
+
 	virtual double intersect(ray r)=0;
-	virtual vettore normal(vettore p)=0;
+	virtual vettore normal(ray r)=0;
+	
 	ray reflect(ray r);
-	double get_ref();
+//	ray trapass(ray r);
+//	ray cast();
+
+	double get_refl();
+	double get_opac();
+	double get_emit();
 	vettore get_color();
 };
 
-class light : public object
-{
-private:
-	double i, R;
-
-public:
-	light(vettore _pos = vettore(1, 1, -1), double _i = 1, vettore _color=vettore(255,255,255));
-	ray cast(vettore p);
-	vettore shade(vettore p, vettore n);
-	double intersect(ray r);
-	vettore normal(vettore p);
-};
-
 class sphere : public object{
-private:
+protected:
 	double R;
 public:
-	sphere(vettore _pos=vettore(0,0,1), double _R=1, double _refl=0, vettore _color=vettore(255,255,255));
+	sphere(double _R=1, vettore _color=vettore(255,255,255), double _refl=0, double _opac=0, double _emit=0, entity e=entity());
+
 	double intersect(ray r);
-	vettore normal(vettore p);
+	vettore normal(ray r);
 };
 class plane : public object
 {
-private:
+protected:
 	vettore N;
 
 public:
-	plane(vettore _pos = vettore(0, 0, 1), vettore N = vettore(0,1,0), double _refl=0, vettore _color=vettore(255,255,255));
+	plane(vettore _N=vettore(0,0,1), vettore _color=vettore(255,255,255), double _refl=0, double _opac=0, double _emit=0, entity e=entity());
+	
 	double intersect(ray r);
-	vettore normal(vettore p);
+	vettore normal(ray r);
 };
+
+/*
+class mesh : public object
+{
+protected:
+	vector<triangle> v_tr;
+public:
+	mesh(vector<triangle> v_tr, );
+	void add_triangle(triangle);
+
+	ray cast(vettore p);
+	double intersect(ray r);
+	vettore shade(vettore p, vettore n);
+};
+*/
 
 class scene
 {
-private:
+protected:
 	camera cam;
 	vector<light*> lig;
 	vector<object*> obj;
