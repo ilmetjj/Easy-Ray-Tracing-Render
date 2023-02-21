@@ -152,7 +152,7 @@ public:
 	
 	ray reflect(ray r);
 //	ray trapass(ray r);
-//	ray cast();
+	ray cast(ray r);
 
 	double get_refl();
 	double get_opac();
@@ -206,6 +206,9 @@ protected:
 	void (*move)(camera &, vector<object *> &, vector<light *> &, double);
 
 	vector<vettore> render(int x, int y);
+	vector<vettore> rend_p(int x, int y, int n_sample, int bounce);
+
+	vettore radiance(ray r, int n_sample, int bounce);
 
 public:
 	scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double));
@@ -215,6 +218,8 @@ public:
 	
 	void rend_img(string file="render.png", double scale=100, double n=1);
 	void rend_term(int slp_t=100, double dn=0.01, double nf=10, double ni=0);
+
+	void rend_img_p(string file="render.png", double scale=100, double n=1,  int n_sample=100, int bounce=3);
 };
 
 #endif
