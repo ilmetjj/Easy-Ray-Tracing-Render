@@ -21,6 +21,7 @@ using namespace std;
 #define soft 1
 #define term_filt 0.01
 #define sun_appr 0.9
+#define min_smp 3
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 

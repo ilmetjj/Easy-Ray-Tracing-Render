@@ -468,16 +468,16 @@ vettore scene::radiance(ray r, int n_sample, int bounce){
 		else if(obj[H]->get_opac()==1){
 		vettore sum=vettore(0,0,0);
 		
-		int n_smp=n_sample*bounce;
+		int n_smp=(n_sample*pow(bounce/10,2)>min_smp?n_sample*pow(bounce/10,2):min_smp);
 		for(int i=0; i<n_smp; i++){
 			vettore get_col=vettore(0,0,0);
 			
 			s=obj[H]->cast(r, eng);
-			get_col=radiance(s,n_sample,bounce-1)/* *(s.d.normalize()*obj[H]->normal(r).normalize())*/;
+			get_col=radiance(s,n_sample,n_smp>min_smp?bounce-1:0)/* *(s.d.normalize()*obj[H]->normal(r).normalize())*/;
 			get_col = get_col.per(obj[H]->get_color() / 255);
 			sum=sum+get_col;
 		}
-		sum=(double(M_PI*double(2))/double(n_smp))*sum;
+		sum=sum*(double(M_PI*double(2))/double(n_smp));
 		
 		color=sum;
 
