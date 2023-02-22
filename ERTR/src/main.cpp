@@ -10,6 +10,46 @@ using namespace std;
 void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
 {
 
+
+}
+
+int main(/*int argc, char** argv*/){
+
+	camera c(25,15,100);
+	c.move_to(vettore(0,200,-200));
+	c.point_to(vettore(5,5,20));
+
+	scene A(c, move);
+
+	sphere s(5,vettore(80,200,80),0,1,0,entity(vettore(0,5,20)));
+
+	plane p(vettore(0,1,0), vettore(80,80,200), 0,1,0, entity(vettore(0,-10,0)));
+
+	l_point l(2,vettore(200,200,200),50,entity(vettore(20,25,20)));
+
+	A.add_obj(s);
+	A.add_obj(p);
+	A.add_lig(l);
+	
+	system("mkdir rendering2");
+
+	for(float i=0; i<2; i+=1){
+		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
+		A.rend_img(file, 20, i);
+		A.rend_img_p(file_p, 20, i, 100, 3);
+		cout<<i<<" "<<flush;
+	}
+
+	return 0;
+}
+
+
+/*
+
+
+void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
+{
+
 	vettore m(sin(n * 7) * 35, sin(n * 7) * 15, 5 + cos(n * 7) * 35);
 	lig[0]->move_to(m);
 
@@ -21,8 +61,6 @@ void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
 	cam.point_to(obj[0]->get_pos());
 
 }
-
-int main(/*int argc, char** argv*/){
 
 	camera c(38.4,21.6,100);
 //	c.move_to(vettore(0,100,-100));
@@ -55,43 +93,4 @@ int main(/*int argc, char** argv*/){
 	A.add_lig(l1);
 	A.add_lig(l2);
 	A.add_lig(l3);
-/*
-	sphere 
-	s(4, vettore(255,100,255), 0, 1, 0, entity(vettore(0,-10,15)));
-
-	plane
-	p(vettore(0,0,-1),vettore(100,100,255), 0, 1, 0, entity(vettore(0,0,100))),
-	p2(vettore(0,1,0),vettore(100,255,100), 0, 1, 0, entity(vettore(0,-15,0)));
-
-	sun
-	u2(vettore(0,1,0),vettore(230,255,127),3);
-
-	l_point 
-	u(5,vettore(100,100,100),5,entity(vettore(0,0,15)));
-
-	A.add_obj(s);
-	A.add_obj(p);
-	A.add_obj(p2);
-
-	A.add_lig(u);
-	A.add_lig(u2);
 */
-//	A.rend_term(200, 0.001, 3, 0);
-
-	sun
-	u2(vettore(0,1,0),vettore(230,255,127),1);
-	
-	A.add_lig(u2);
-	
-	system("mkdir rendering2");
-
-//	int i=0;	
-	for(float i=31; i<50; i+=1){
-		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
-		A.rend_img(file, 10, i);
-		A.rend_img_p(file_p, 10, i, 200, 2);
-		cout<<i<<" "<<flush;
-	}
-
-	return 0;
-}

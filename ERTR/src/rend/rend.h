@@ -8,18 +8,19 @@
 #include<sstream>
 #include<fstream>
 #include<iostream>
-#include <sys/ioctl.h>
-#include <stdio.h>
-#include <unistd.h>
+#include<sys/ioctl.h>
+#include<stdio.h>
+#include<unistd.h>
+#include<random>
 
 #include"../GMath/GMath.h"
 #include "../lodepng/lodepng.h"
 
 using namespace std;
 
-#define soft 0.5F
-#define term_filt 0.01f
-#define sun_appr 0.9f
+#define soft 1
+#define term_filt 0.01
+#define sun_appr 0.9
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 
@@ -152,7 +153,7 @@ public:
 	
 	ray reflect(ray r);
 //	ray trapass(ray r);
-	ray cast(ray r);
+	ray cast(ray r, std::default_random_engine& eng);
 
 	double get_refl();
 	double get_opac();
@@ -209,6 +210,8 @@ protected:
 	vector<vettore> rend_p(int x, int y, int n_sample, int bounce);
 
 	vettore radiance(ray r, int n_sample, int bounce);
+
+	std::default_random_engine eng;
 
 public:
 	scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double));

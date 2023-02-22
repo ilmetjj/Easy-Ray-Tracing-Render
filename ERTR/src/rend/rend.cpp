@@ -170,11 +170,15 @@ ray object::reflect(ray r){
 	s.d = (2 * Q - r.o - P);
 	return s;
 }
-ray object::cast(ray r){
+ray object::cast(ray r, std::default_random_engine& eng){
 	double x=0, y=0, z=0;
 	double e1=0,e2=0;
 	vettore v(0,0,0), N, NP, NP2;
 	N=normal(r);
+    
+    std::uniform_real_distribution<double> distr(-1, 1);
+	std::uniform_real_distribution<double> d_cos(0, M_PI_2);
+
 
 /*
 	e1=double(rand())/RAND_MAX;
@@ -192,12 +196,16 @@ ray object::cast(ray r){
 	NP=NP2%NP;
 	v=NP*sqrt(1-pow(e1,2))*cos(2*M_PI*e2)+NP2*sqrt(1-pow(e1,2))*sin(2*M_PI*e2)+NP*e1;
 */	
-	do{
+	do{/*
 		x=double(rand())/RAND_MAX*2-1;
 		y=double(rand())/RAND_MAX*2-1;
 		z=double(rand())/RAND_MAX*2-1;
+	*/	
+		x=distr(eng);
+		y=distr(eng);
+		z=distr(eng);
 		v=vettore(x,y,z);
-	}while(v.mod()>1 and v*N<0);
+	}while(v.mod()>1 or v.dir()*N.dir()<=cos(d_cos(eng)));
 	
 
 
@@ -402,8 +410,9 @@ vector<vettore> scene::rend_p(int width, int height, int n_sample, int bounce){
 	for (int i = 0; i < height; i++)
 	{
 		cout<<i<<":	"<<flush;
-		for (double j = 0; j < width; j++)
+		for (int j = 0; j < width; j++)
 		{
+//			cout<<j<<" "<<flush;
 			vettore color;
 			ray r = cam.cast(xi - xd * j, yi - yd * i);
 			color=radiance(r,n_sample,bounce);
@@ -463,12 +472,12 @@ vettore scene::radiance(ray r, int n_sample, int bounce){
 		for(int i=0; i<n_smp; i++){
 			vettore get_col=vettore(0,0,0);
 			
-			s=obj[H]->cast(r);
-			get_col=radiance(s,n_sample,bounce-1)*(s.d.normalize()*obj[H]->normal(r).normalize());
+			s=obj[H]->cast(r, eng);
+			get_col=radiance(s,n_sample,bounce-1)/* *(s.d.normalize()*obj[H]->normal(r).normalize())*/;
 			get_col = get_col.per(obj[H]->get_color() / 255);
 			sum=sum+get_col;
 		}
-		sum=(double(M_PI*2)/(n_smp))*sum;
+		sum=(double(M_PI*double(2))/double(n_smp))*sum;
 		
 		color=sum;
 
