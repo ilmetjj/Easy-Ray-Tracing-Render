@@ -35,10 +35,10 @@ int main(/*int argc, char** argv*/){
 	
 	system("mkdir rendering2");
 
-	for(float i=0; i<2; i+=1){
+	for(double i=0; i<2; i+=1){
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
 		A.rend_img(file, 50, i);
-		A.rend_img_p(file_p, 50, i, 500, 20);
+		A.rend_img_p(file_p, 50, i, 5000, 10);
 		cout<<i<<" "<<flush;
 	}
 

@@ -22,6 +22,7 @@ using namespace std;
 #define term_filt 0.01
 #define sun_appr 0.9
 #define min_smp 3
+#define s_b_p 1
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 
@@ -210,7 +211,7 @@ protected:
 	vector<vettore> render(int x, int y);
 	vector<vettore> rend_p(int x, int y, int n_sample, int bounce);
 
-	vettore radiance(ray r, int n_sample, int bounce, int ref=0);
+	vettore radiance(ray r, int n_sample, int bounce, int ref=0, int H_prev=-1);
 
 	int strt_bnc;
 	std::default_random_engine eng;

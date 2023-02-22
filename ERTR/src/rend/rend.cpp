@@ -84,7 +84,7 @@ double camera::focal(){return df;}
 ray camera::cast(double px, double py){
 	ray r;
 
-	r.o= pos + dz*df + dx*px +dy*py;
+	r.o= pos + (dz*df) + (dx*px) + (dy*py);
 	r.d=normalize(r.o-pos);
 	
 	return r;
@@ -104,12 +104,13 @@ vettore light::get_color(){return color;}
 l_point::l_point(double _R, vettore _color, double _I, entity e):light(_color, _I, e), R(_R){}
 
 ray l_point::cast(vettore p){
-	ray r(pos);
-	r.d = normalize(p - pos);
+	ray r;
+	r.o=pos;
+	r.d=normalize(p - pos);
 	return r;
 }
 double l_point::intersect(ray r){
-	double a = r.d * r.d;
+/*	double a = r.d * r.d;
 	double b = 2 * (r.o - pos) * r.d;
 	double c = (r.o - pos) * (r.o - pos) - pow(R, 2);
 	double d = pow(b, 2) - 4 * a * c;
@@ -127,9 +128,37 @@ double l_point::intersect(ray r){
 		return 0;
 
 	return t1 < t2 ? t1 : t2;
+	*/
+	r.d.normalize();
+	double u, e;
+	vettore h=pos-r.o;
+	u=h*r.d;
+	e=pow(u,2)-(h*h)+pow(R,2);
+	if(e<0){
+		return 0;
+	}
+	else if(e==0){
+		return u>0?u:0;
+	}
+	else{
+		double t1=u-sqrt(e), t2=u+sqrt(e);
+		if(t1==0 or t2==0){
+			return 0;
+		}
+		if(t1<0 and t2<0){
+			return 0;
+		}
+		else if(t1>0 and t2>0){
+			return t1<t2?t1:t2;
+		}
+		else{
+			return t1>0?t1:t2;
+		}
+	}
+
 }
 vettore l_point::shade(vettore p, vettore n){
-	vettore r = (pos - p).normalize();
+	vettore r = normalize(pos - p);
 	return color * ((r * n) * (I * soft));
 }
 
@@ -142,11 +171,11 @@ sun::sun(vettore _angle, vettore _color, double _I, entity e):light(_color, _I, 
 ray sun::cast(vettore p){
 	ray r;
 	r.o=(p+angle*1e4);
-	r.d=angle;
+	r.d=angle.dir();
 	return r;
 }
 double sun::intersect(ray r){
-	if(r.d.normalize()*angle>sun_appr){
+	if(r.d.dir()*angle>sun_appr){
 		return 1e4;
 	}
 	else
@@ -159,6 +188,7 @@ vettore sun::shade(vettore p, vettore n){
 
 object::object(vettore _color, double _refl, double _opac, double _emit, entity e): entity(e), color(_color), refl(_refl), opac(_opac), emit(_emit){}
 ray object::reflect(ray r){
+	r.d.normalize();
 	vettore P = r.point(intersect(r));
 	vettore n = normal(r);
 	double t;
@@ -166,16 +196,17 @@ ray object::reflect(ray r){
 	t = (n * (r.o - P)) / (n * n);
 	vettore Q = P + (n * t);
 
-	ray s(P);
-	s.d = (2 * Q - r.o - P);
+	ray s;
+	s.o=P;
+	s.d = normalize(2 * Q - r.o - P);
 	return s;
 }
 ray object::cast(ray r, std::default_random_engine& eng){
 	double x=0, y=0, z=0;
-	double e1=0,e2=0;
-	vettore v(0,0,0), N, NP, NP2;
-	N=normal(r);
-    
+	vettore N, v(0,0,0);
+	N=normal(r).dir();
+
+
     std::uniform_real_distribution<double> distr(-1, 1);
 	std::uniform_real_distribution<double> d_cos(0, M_PI_2);
 
@@ -210,7 +241,7 @@ ray object::cast(ray r, std::default_random_engine& eng){
 
 
 
-	return ray(r.point(intersect(r)), v.normalize());
+	return ray(r.point(intersect(r)), normalize(v));
 
 }
 
@@ -223,28 +254,37 @@ vettore object::get_color(){return color;}
 
 sphere::sphere(double _R, vettore _color, double _refl, double _opac, double _emit, entity e):object(_color, _refl, _opac, _emit, e), R(_R){}
 double sphere::intersect(ray r){
-	double a = r.d * r.d;
-	double b = 2 * (r.o - pos) * r.d;
-	double c = (r.o - pos) * (r.o - pos) - pow(R, 2);
-	double d = pow(b, 2) - 4 * a * c;
-
-	if (d < 0)
+	r.d.normalize();
+	double u, e;
+	vettore h=pos-r.o;
+	u=h*r.d;
+	e=pow(u,2)-(h*h)+pow(R,2);
+	if(e<0){
 		return 0;
-
-	double t1 = (0 - b - sqrt(d)) / (2 * a);
-	double t2 = (0 - b + sqrt(d)) / (2 * a);
-
-	if (t1 * t2 < 0)
-		return t2 < 0 ? t1 : t2;
-
-	if (t1 < 0 and t2 < 0)
-		return 0;
-
-	return t1 < t2 ? t1 : t2;
+	}
+	else if(e==0){
+		return u>0?u:0;
+	}
+	else{
+		double t1=u-sqrt(e), t2=u+sqrt(e);
+		if(t1==0 or t2==0){
+			return 0;
+		}
+		if(t1<0 and t2<0){
+			return 0;
+		}
+		else if(t1>0 and t2>0){
+			return t1<t2?t1:t2;
+		}
+		else{
+			return t1>0?t1:t2;
+		}
+	}
 }
 vettore sphere::normal(ray r){
+	r.d.normalize();
 	vettore p=r.point(intersect(r));
-	return (p - pos).normalize();
+	return normalize(p - pos);
 }
 
 /*Plane*/
@@ -253,7 +293,7 @@ plane::plane(vettore _N, vettore _color, double _refl, double _opac, double _emi
 	N.normalize();
 }
 double plane::intersect(ray r){
-
+	r.d.normalize();
 
 	double num = (pos - r.o) * N;
 	double den = r.d * N;
@@ -261,13 +301,13 @@ double plane::intersect(ray r){
 		return 0;
 	double t = num / den;
 
-//	if (t < 0)
-//		return 0;
+	if (t <= 0)
+		return 0;
 
 	return t;
 }
 vettore plane::normal(ray r){
-	return N.normalize();
+	return normalize(N);
 }
 
 /*Scene*/
@@ -425,7 +465,7 @@ vector<vettore> scene::rend_p(int width, int height, int n_sample, int bounce){
 	return vec;
 }
 
-vettore scene::radiance(ray r, int n_sample, int bounce, int ref){
+vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 	vettore color=vettore(0,0,0);
 
 	bool hit_l=false;
@@ -460,29 +500,28 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref){
 	if(hit_l){
 		color= lig[H]->get_color()*lig[H]->get_I();
 	}
-	else if(T>0 and bounce>0){
+	else if(T>0 and bounce>0 and H!=H_prev){
 		ray s;
 
-		if(obj[H]->get_refl()==1){
+		if(obj[H]->get_refl()>0){
 			s=obj[H]->reflect(r);
-			color=radiance(s,n_sample, bounce-1,ref+1);
+			color=radiance(s,n_sample, bounce-1,ref+1,H);
 		}
 		else if(obj[H]->get_opac()==1){
-		vettore sum=vettore(0,0,0);
-		
-		int n_smp=(n_sample*pow((bounce+ref)/strt_bnc,2)>min_smp?n_sample*pow((bounce+ref)/strt_bnc,2):min_smp);
-		for(int i=0; i<n_smp; i++){
-			vettore get_col=vettore(0,0,0);
+			vettore sum=vettore(0,0,0);
 			
-			s=obj[H]->cast(r, eng);
-			get_col=radiance(s,n_sample,n_smp>min_smp?bounce-1:0)/* *(s.d.normalize()*obj[H]->normal(r).normalize())*/;
-			get_col = get_col.per(obj[H]->get_color() / 255);
-			sum=sum+get_col;
-		}
-		sum=sum*(double(M_PI*double(2))/double(n_smp));
-		
-		color=sum;
-
+			int n_smp=(n_sample*pow((bounce+ref)/strt_bnc,s_b_p)>min_smp?n_sample*pow((bounce+ref)/strt_bnc,s_b_p):min_smp);
+			for(int i=0; i<n_smp; i++){
+				vettore get_col=vettore(0,0,0);
+				
+				s=obj[H]->cast(r, eng);
+				get_col=radiance(s,n_sample,n_smp>min_smp?bounce-1:0,0,H)/* *(s.d.normalize()*obj[H]->normal(r).normalize())*/;
+				get_col = get_col.per(obj[H]->get_color() / 255);
+				sum=sum+get_col;
+			}
+			sum=sum*(double(M_PI*double(2))/double(n_smp));
+			
+			color=sum;
 		}
 	}
 
@@ -514,7 +553,7 @@ void scene::rend_img(string file, double scale, double n)
 void scene::rend_term(int slp_t, double dn, double nf, double ni){
 	struct winsize w;
 	double width, height;
-	for (float n = ni; n < nf; n+=dn)
+	for (double n = ni; n < nf; n+=dn)
 	{
 		usleep(slp_t);
 
@@ -532,7 +571,7 @@ void scene::rend_term(int slp_t, double dn, double nf, double ni){
 		for (int i = 0; i < height; i++){
 			for(int j=0; j<width; j++){
 
-				float I;
+				double I;
 				I = vec[i * width + j].mod();
 //				I = (vec[i * width + j].get_x() + vec[i * width + j].get_y() + vec[i * width + j].get_z())/3;
 				I*=term_filt;

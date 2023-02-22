@@ -11,3 +11,4 @@ At the moment you can edit the `main.cpp` file to create new entitys as objects 
 At the moment are available a real time terminal render and a PNG render. You can render a sequence of images and edit theme as frames into a video (es. using Blender).
 
 ![Image](Images/image1.400000.png)
+![Image](Images/image_p_6.000000.png)
