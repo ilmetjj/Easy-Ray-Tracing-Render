@@ -407,6 +407,8 @@ vector<vettore> scene::rend_p(int width, int height, int n_sample, int bounce){
 	yd = cam.height() / height;
 	yi = cam.height() / 2;
 
+	strt_bnc=bounce;
+
 	for (int i = 0; i < height; i++)
 	{
 		cout<<i<<":	"<<flush;
@@ -423,7 +425,7 @@ vector<vettore> scene::rend_p(int width, int height, int n_sample, int bounce){
 	return vec;
 }
 
-vettore scene::radiance(ray r, int n_sample, int bounce){
+vettore scene::radiance(ray r, int n_sample, int bounce, int ref){
 	vettore color=vettore(0,0,0);
 
 	bool hit_l=false;
@@ -463,12 +465,12 @@ vettore scene::radiance(ray r, int n_sample, int bounce){
 
 		if(obj[H]->get_refl()==1){
 			s=obj[H]->reflect(r);
-			color=radiance(s,n_sample, bounce-1);
+			color=radiance(s,n_sample, bounce-1,ref+1);
 		}
 		else if(obj[H]->get_opac()==1){
 		vettore sum=vettore(0,0,0);
 		
-		int n_smp=(n_sample*pow(bounce/10,2)>min_smp?n_sample*pow(bounce/10,2):min_smp);
+		int n_smp=(n_sample*pow((bounce+ref)/strt_bnc,2)>min_smp?n_sample*pow((bounce+ref)/strt_bnc,2):min_smp);
 		for(int i=0; i<n_smp; i++){
 			vettore get_col=vettore(0,0,0);
 			

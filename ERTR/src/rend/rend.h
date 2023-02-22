@@ -210,8 +210,9 @@ protected:
 	vector<vettore> render(int x, int y);
 	vector<vettore> rend_p(int x, int y, int n_sample, int bounce);
 
-	vettore radiance(ray r, int n_sample, int bounce);
+	vettore radiance(ray r, int n_sample, int bounce, int ref=0);
 
+	int strt_bnc;
 	std::default_random_engine eng;
 
 public:
