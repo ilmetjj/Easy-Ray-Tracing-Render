@@ -1,4 +1,4 @@
-TARGET_EXEC := prog
+TARGET_EXEC := ertr
 
 BUILD_DIR := ./build
 SRC_DIRS := ./src

@@ -4,11 +4,41 @@
 
 The aim of this project is to creat a program able to render a scene with 3D objects using a ray tracing algorithm.
 
+![Image](Images/image_p_9.000000.png)
+
+## Content of the library
+
+3 tipes of rendering engine:
+
+* `rend_term` a real time terminal engine (only in black and white)
+* `rend_img` a direct light only engine (fast but unaccurate)
+* `rend_img_p` an ambient light sampling engine (complete render enginge with Montecarlo integration)
+
+2 tipes of light:
+
+* `l_point` (a spheric light source)
+* `sun` (ambient light from given direction)
+
+2 tipes of object:
+
+* `sphere`
+* `plane`
+
 ## How to use
 
-At the moment you can edit the `main.cpp` file to create new entitys as objects of the respective classes and add theme to the scene. You can also edit the movement function passed to the scene to change the movement pattern at each iteration.
+Download the `ERTR` directory and run `make` then execute `build/ertr`
 
-At the moment are available a real time terminal render and a PNG render. You can render a sequence of images and edit theme as frames into a video (es. using Blender).
+An example program is given in the `main.cpp` file.\
+You can edit that or integrate the library in your software coping the 3 folders (`GMath`, `lodepng` and `rend`) and including the `rend.h` library.
 
-![Image](Images/image_p_9.000000.png)
+In order to use the library:
+
+* create a camera object `camera(double lx,double ly,double df)` where lx-ly are the sizes of the camera screen and df is the focal distance
+* create a move function function `void move(camera& cam, vector<object*>& obj, vector<light*>& lig, double n)` that will be the function that iterate the movement of the objects of the scene at each frame
+* create a scene object `scene(camera c, (*move) m)`
+* create objects and lights of the available classes and add theme to the scene with the methods of the scene class `add_obj(object& o)` and `add_lig(light& l)`
+* render the scene with one of the available engine using the respective method of the scene class
+
+All the entities (camera, objects and lights) have movement and rotation methods that can be used to animate the scene in the movement function
+
 ![Image](Images/image_p_11.000000.png)
