@@ -158,8 +158,9 @@ double l_point::intersect(ray r){
 
 }
 vettore l_point::shade(vettore p, vettore n){
-	vettore r = normalize(pos - p);
-	return color * ((r * n) * (I * soft));
+	vettore r = /*normalize*/(pos - p);
+	double t=pow(dist(p,pos),2);
+	return color * ((r * n) * (I * soft))/t;
 }
 
 /*Sun*/

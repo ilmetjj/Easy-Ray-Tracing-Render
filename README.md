@@ -12,5 +12,3 @@ At the moment are available a real time terminal render and a PNG render. You ca
 
 ![Image](Images/image_p_9.000000.png)
 ![Image](Images/image_p_11.000000.png)
-
-![Image](Images/image1.400000.png)
