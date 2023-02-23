@@ -8,18 +8,23 @@
 #include<sstream>
 #include<fstream>
 #include<iostream>
-#include <sys/ioctl.h>
-#include <stdio.h>
-#include <unistd.h>
+#include<sys/ioctl.h>
+#include<stdio.h>
+#include<unistd.h>
+#include<random>
+#include<chrono>
 
 #include"../GMath/GMath.h"
 #include "../lodepng/lodepng.h"
 
 using namespace std;
 
-#define soft 0.5F
-#define term_filt 0.01f
-#define sun_appr 0.9f
+#define soft 1
+#define term_filt 0.01
+#define sun_appr 0.9
+#define min_smp 10
+#define s_b_p 0.5
+#define t_min 1e-7
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 
@@ -152,7 +157,7 @@ public:
 	
 	ray reflect(ray r);
 //	ray trapass(ray r);
-//	ray cast();
+	ray cast(ray r, std::mt19937_64& eng);
 
 	double get_refl();
 	double get_opac();
@@ -206,6 +211,12 @@ protected:
 	void (*move)(camera &, vector<object *> &, vector<light *> &, double);
 
 	vector<vettore> render(int x, int y);
+	vector<vettore> rend_p(int x, int y, int n_sample, int bounce);
+
+	vettore radiance(ray r, int n_sample, int bounce, int ref=0, int H_prev=-1);
+
+	int strt_bnc;
+	std::mt19937_64 eng;
 
 public:
 	scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double));
@@ -215,6 +226,8 @@ public:
 	
 	void rend_img(string file="render.png", double scale=100, double n=1);
 	void rend_term(int slp_t=100, double dn=0.01, double nf=10, double ni=0);
+
+	void rend_img_p(string file="render.png", double scale=100, double n=1,  int n_sample=100, int bounce=3);
 };
 
 #endif

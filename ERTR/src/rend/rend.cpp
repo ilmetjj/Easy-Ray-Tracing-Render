@@ -84,7 +84,7 @@ double camera::focal(){return df;}
 ray camera::cast(double px, double py){
 	ray r;
 
-	r.o= pos + dz*df + dx*px +dy*py;
+	r.o= pos + (dz*df) + (dx*px) + (dy*py);
 	r.d=normalize(r.o-pos);
 	
 	return r;
@@ -104,12 +104,13 @@ vettore light::get_color(){return color;}
 l_point::l_point(double _R, vettore _color, double _I, entity e):light(_color, _I, e), R(_R){}
 
 ray l_point::cast(vettore p){
-	ray r(pos);
-	r.d = normalize(p - pos);
+	ray r;
+	r.o=pos;
+	r.d=normalize(p - pos);
 	return r;
 }
 double l_point::intersect(ray r){
-	double a = r.d * r.d;
+/*	double a = r.d * r.d;
 	double b = 2 * (r.o - pos) * r.d;
 	double c = (r.o - pos) * (r.o - pos) - pow(R, 2);
 	double d = pow(b, 2) - 4 * a * c;
@@ -127,10 +128,39 @@ double l_point::intersect(ray r){
 		return 0;
 
 	return t1 < t2 ? t1 : t2;
+	*/
+	r.d.normalize();
+	double u, e;
+	vettore h=pos-r.o;
+	u=h*r.d;
+	e=pow(u,2)-(h*h)+pow(R,2);
+	if(e<0){
+		return 0;
+	}
+	else if(e==0){
+		return u>0?u:0;
+	}
+	else{
+		double t1=u-sqrt(e), t2=u+sqrt(e);
+		if(t1==0 or t2==0){
+			return 0;
+		}
+		if(t1<0 and t2<0){
+			return 0;
+		}
+		else if(t1>0 and t2>0){
+			return t1<t2?t1:t2;
+		}
+		else{
+			return t1>0?t1:t2;
+		}
+	}
+
 }
 vettore l_point::shade(vettore p, vettore n){
-	vettore r = (pos - p).normalize();
-	return color * ((r * n) * (I * soft));
+	vettore r = /*normalize*/(pos - p);
+	double t=pow(dist(p,pos),2);
+	return color * ((r * n) * (I * soft))/t;
 }
 
 /*Sun*/
@@ -142,11 +172,11 @@ sun::sun(vettore _angle, vettore _color, double _I, entity e):light(_color, _I, 
 ray sun::cast(vettore p){
 	ray r;
 	r.o=(p+angle*1e4);
-	r.d=angle;
+	r.d=angle.dir();
 	return r;
 }
 double sun::intersect(ray r){
-	if(r.d.normalize()*angle>sun_appr){
+	if(r.d.dir()*angle>sun_appr){
 		return 1e4;
 	}
 	else
@@ -159,6 +189,7 @@ vettore sun::shade(vettore p, vettore n){
 
 object::object(vettore _color, double _refl, double _opac, double _emit, entity e): entity(e), color(_color), refl(_refl), opac(_opac), emit(_emit){}
 ray object::reflect(ray r){
+	r.d.normalize();
 	vettore P = r.point(intersect(r));
 	vettore n = normal(r);
 	double t;
@@ -166,9 +197,53 @@ ray object::reflect(ray r){
 	t = (n * (r.o - P)) / (n * n);
 	vettore Q = P + (n * t);
 
-	ray s(P);
-	s.d = (2 * Q - r.o - P);
+	ray s;
+	s.o=P;
+	s.d = normalize(2 * Q - r.o - P);
 	return s;
+}
+ray object::cast(ray r, std::mt19937_64& eng){
+	double x=0, y=0, z=0;
+	vettore N, v(0,0,0);
+	N=normal(r).dir();
+
+
+    std::uniform_real_distribution<double> distr(-1, 1);
+	std::uniform_real_distribution<double> d_cos(0, M_PI_2);
+
+
+/*
+	e1=double(rand())/RAND_MAX;
+	e2=double(rand())/RAND_MAX;
+	if(abs(N*dx)!=1){
+		NP=dx;
+	}
+	else if(abs(N*dx)!=1){
+		NP=dy;
+	}
+	else{
+		NP=dz;
+	}
+	NP2=N%NP;
+	NP=NP2%NP;
+	v=NP*sqrt(1-pow(e1,2))*cos(2*M_PI*e2)+NP2*sqrt(1-pow(e1,2))*sin(2*M_PI*e2)+NP*e1;
+*/	
+	do{/*
+		x=double(rand())/RAND_MAX*2-1;
+		y=double(rand())/RAND_MAX*2-1;
+		z=double(rand())/RAND_MAX*2-1;
+	*/	
+		x=distr(eng);
+		y=distr(eng);
+		z=distr(eng);
+		v=vettore(x,y,z);
+	}while(v.mod()>1 or v.dir()*N.dir()<=cos(d_cos(eng)));
+	
+
+
+
+	return ray(r.point(intersect(r)), normalize(v));
+
 }
 
 double object::get_refl(){return refl;}
@@ -180,28 +255,37 @@ vettore object::get_color(){return color;}
 
 sphere::sphere(double _R, vettore _color, double _refl, double _opac, double _emit, entity e):object(_color, _refl, _opac, _emit, e), R(_R){}
 double sphere::intersect(ray r){
-	double a = r.d * r.d;
-	double b = 2 * (r.o - pos) * r.d;
-	double c = (r.o - pos) * (r.o - pos) - pow(R, 2);
-	double d = pow(b, 2) - 4 * a * c;
-
-	if (d < 0)
+	r.d.normalize();
+	double u, e;
+	vettore h=pos-r.o;
+	u=h*r.d;
+	e=pow(u,2)-(h*h)+pow(R,2);
+	if(e<0){
 		return 0;
-
-	double t1 = (0 - b - sqrt(d)) / (2 * a);
-	double t2 = (0 - b + sqrt(d)) / (2 * a);
-
-	if (t1 * t2 < 0)
-		return t2 < 0 ? t1 : t2;
-
-	if (t1 < 0 and t2 < 0)
-		return 0;
-
-	return t1 < t2 ? t1 : t2;
+	}
+	else if(e==0){
+		return u>0?u:0;
+	}
+	else{
+		double t1=u-sqrt(e), t2=u+sqrt(e);
+		if(t1==0 or t2==0){
+			return 0;
+		}
+		if(t1<0 and t2<0){
+			return 0;
+		}
+		else if(t1>0 and t2>0){
+			return t1<t2?t1:t2;
+		}
+		else{
+			return t1>0?t1:t2;
+		}
+	}
 }
 vettore sphere::normal(ray r){
+	r.d.normalize();
 	vettore p=r.point(intersect(r));
-	return (p - pos).normalize();
+	return normalize(p - pos);
 }
 
 /*Plane*/
@@ -210,22 +294,31 @@ plane::plane(vettore _N, vettore _color, double _refl, double _opac, double _emi
 	N.normalize();
 }
 double plane::intersect(ray r){
+	r.d.normalize();
+
 	double num = (pos - r.o) * N;
 	double den = r.d * N;
+	if(den==0)
+		return 0;
 	double t = num / den;
 
-	if (t < 0)
+	if (t <= 0)
 		return 0;
 
 	return t;
 }
 vettore plane::normal(ray r){
-	return N.normalize();
+	return normalize(N);
 }
 
 /*Scene*/
 
-scene::scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double)) : cam(_cam), move(_move) {}
+scene::scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double)) : cam(_cam), move(_move) {
+	srand(time(NULL));
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	eng=mt19937_64(seed);
+	
+}
 void scene::set_cam(camera &c) {cam = c;}
 void scene::add_obj(object &o){obj.push_back(&o);}
 void scene::add_lig(light &l){lig.push_back(&l);}
@@ -346,6 +439,103 @@ vector<vettore> scene::render(int width, int height){
 	return vec;
 }
 
+vector<vettore> scene::rend_p(int width, int height, int n_sample, int bounce){
+	vector<vettore> vec;
+	vec.reserve(width*height);
+
+	double xd, xi;
+	xd = cam.width() / width;
+	xi = cam.width() / 2;
+
+	double yd, yi;
+	yd = cam.height() / height;
+	yi = cam.height() / 2;
+
+	strt_bnc=bounce;
+
+	for (int i = 0; i < height; i++)
+	{
+		cout<<i<<":	"<<flush;
+		for (int j = 0; j < width; j++)
+		{
+//			cout<<j<<" "<<flush;
+			vettore color;
+			ray r = cam.cast(xi - xd * j, yi - yd * i);
+			color=radiance(r,n_sample,bounce);
+			vec.push_back(color);
+		}
+		cout<<endl;
+	}
+	return vec;
+}
+
+vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
+	vettore color=vettore(0,0,0);
+
+	bool hit_l=false;
+	int H = 0;
+	double T = 0;
+	for (int h = 0; h < lig.size(); h++)
+	{
+		double t = lig[h]->intersect(r);
+		if (t > t_min)
+		{
+			if (t < T || T <= 0)
+			{
+				T = t;
+				H = h;
+				hit_l=true;
+			}
+		}
+	}
+	for (int h = 0; h < obj.size(); h++)
+	{
+		double t = obj[h]->intersect(r);
+		if (t > t_min)
+		{
+			if (t < T || T <= 0)
+			{
+				T = t;
+				H = h;
+				hit_l=false;
+			}
+		}
+	}
+	if(hit_l){
+		color= lig[H]->get_color()*lig[H]->get_I();
+	}
+	else if(T>0 and bounce>0 and H!=H_prev){
+		ray s;
+
+		if(obj[H]->get_refl()>0){
+			s=obj[H]->reflect(r);
+			color=radiance(s,n_sample, bounce-1,ref+1,H);
+		}
+		else if(obj[H]->get_opac()==1){
+			vettore sum=vettore(0,0,0);
+			
+			int n_smp=(n_sample*pow((bounce+ref)/strt_bnc,s_b_p)>min_smp?n_sample*pow((bounce+ref)/strt_bnc,s_b_p):min_smp);
+			for(int i=0; i<n_smp; i++){
+				vettore get_col=vettore(0,0,0);
+				
+				s=obj[H]->cast(r, eng);
+				get_col=radiance(s,n_sample,n_smp>min_smp?bounce-1:0,0,H)/* *(s.d.normalize()*obj[H]->normal(r).normalize())*/;
+				get_col = get_col.per(obj[H]->get_color() / 255);
+				sum=sum+get_col;
+			}
+			sum=sum*(double(M_PI*double(2))/double(n_smp));
+			
+			color=sum;
+		}
+	}
+	else if(T>0 and bounce>0 and H==H_prev){
+		cout<<" T: "<<T<<flush;
+	}
+
+	return color;
+
+}
+
 void scene::rend_img(string file, double scale, double n)
 {
 	move(cam, obj, lig, n);
@@ -370,7 +560,7 @@ void scene::rend_img(string file, double scale, double n)
 void scene::rend_term(int slp_t, double dn, double nf, double ni){
 	struct winsize w;
 	double width, height;
-	for (float n = ni; n < nf; n+=dn)
+	for (double n = ni; n < nf; n+=dn)
 	{
 		usleep(slp_t);
 
@@ -388,76 +578,98 @@ void scene::rend_term(int slp_t, double dn, double nf, double ni){
 		for (int i = 0; i < height; i++){
 			for(int j=0; j<width; j++){
 
-				float I;
+				double I;
 				I = vec[i * width + j].mod();
 //				I = (vec[i * width + j].get_x() + vec[i * width + j].get_y() + vec[i * width + j].get_z())/3;
 				I*=term_filt;
 
 				if (I < 0)
 				{
-					putchar('X');
+					std::putchar('X');
 				}
 				else if (I == 0)
 				{
-					putchar(' ');
+					std::putchar(' ');
 				}
 				else if (0 < I and I <= 0.25)
 				{
-					putchar('.');
+					std::putchar('.');
 				}
 				else if (0.25 < I and I <= 0.5)
 				{
-					putchar(',');
+					std::putchar(',');
 				}
 				else if (0.5 < I and I <= 0.75)
 				{
-					putchar('-');
+					std::putchar('-');
 				}
 				else if (0.75 < I and I <= 1)
 				{
-					putchar('~');
+					std::putchar('~');
 				}
 				else if (1 < I and I <= 1.25)
 				{
-					putchar(':');
+					std::putchar(':');
 				}
 				else if (1.25 < I and I <= 1.5)
 				{
-					putchar(';');
+					std::putchar(';');
 				}
 				else if (1.5 < I and I <= 1.75)
 				{
-					putchar('=');
+					std::putchar('=');
 				}
 				else if (1.75 < I and I <= 2)
 				{
-					putchar('!');
+					std::putchar('!');
 				}
 				else if (2 < I and I <= 2.25)
 				{
-					putchar('*');
+					std::putchar('*');
 				}
 				else if (2.25 < I and I <= 2.5)
 				{
-					putchar('#');
+					std::putchar('#');
 				}
 				else if (2.5 < I and I <= 2.75)
 				{
-					putchar('$');
+					std::putchar('$');
 				}
 				else if (2.75 < I)
 				{
-					putchar('@');
+					std::putchar('@');
 				}
 				else
 				{	
-					putchar('X');
+					std::putchar('X');
 				}
 
 				c++;
 			}
-			putchar(10);
+			std::putchar(10);
 		}
 		printf("\x1b [23A");
 	}
+}
+
+void scene::rend_img_p(string file, double scale, double n,  int n_sample, int bounce)
+{
+	move(cam, obj, lig, n);
+
+	unsigned width = cam.width() * scale, height = cam.height() * scale;
+	std::vector<unsigned char> image;
+	image.resize(width * height * 4);
+
+	vector<vettore> vec;
+	vec=rend_p(width, height, n_sample, bounce);
+
+	cout<<"ended"<<endl;;
+	for(int i=0; i<vec.size(); i++){
+		image[4 * i + 0] = vec[i].get_x() < 255 ? vec[i].get_x() : 255;
+		image[4 * i + 1] = vec[i].get_y() < 255 ? vec[i].get_y() : 255;
+		image[4 * i + 2] = vec[i].get_z() < 255 ? vec[i].get_z() : 255;
+		image[4 * i + 3] = 255;
+	}
+
+	encodeOneStep(file.c_str(), image, width, height);
 }
