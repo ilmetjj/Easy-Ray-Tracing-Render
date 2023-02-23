@@ -201,7 +201,7 @@ ray object::reflect(ray r){
 	s.d = normalize(2 * Q - r.o - P);
 	return s;
 }
-ray object::cast(ray r, std::default_random_engine& eng){
+ray object::cast(ray r, std::mt19937_64& eng){
 	double x=0, y=0, z=0;
 	vettore N, v(0,0,0);
 	N=normal(r).dir();
@@ -314,6 +314,9 @@ vettore plane::normal(ray r){
 
 scene::scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double)) : cam(_cam), move(_move) {
 	srand(time(NULL));
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	eng=mt19937_64(seed);
+	
 }
 void scene::set_cam(camera &c) {cam = c;}
 void scene::add_obj(object &o){obj.push_back(&o);}
@@ -474,7 +477,7 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 	for (int h = 0; h < lig.size(); h++)
 	{
 		double t = lig[h]->intersect(r);
-		if (t > 0)
+		if (t > t_min)
 		{
 			if (t < T || T <= 0)
 			{
@@ -487,7 +490,7 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 	for (int h = 0; h < obj.size(); h++)
 	{
 		double t = obj[h]->intersect(r);
-		if (t > 0)
+		if (t > t_min)
 		{
 			if (t < T || T <= 0)
 			{
@@ -523,6 +526,9 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 			
 			color=sum;
 		}
+	}
+	else if(T>0 and bounce>0 and H==H_prev){
+		cout<<" T: "<<T<<flush;
 	}
 
 	return color;

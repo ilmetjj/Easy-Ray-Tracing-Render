@@ -12,6 +12,7 @@
 #include<stdio.h>
 #include<unistd.h>
 #include<random>
+#include<chrono>
 
 #include"../GMath/GMath.h"
 #include "../lodepng/lodepng.h"
@@ -21,8 +22,9 @@ using namespace std;
 #define soft 1
 #define term_filt 0.01
 #define sun_appr 0.9
-#define min_smp 3
-#define s_b_p 1
+#define min_smp 10
+#define s_b_p 0.5
+#define t_min 1e-9
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 
@@ -155,7 +157,7 @@ public:
 	
 	ray reflect(ray r);
 //	ray trapass(ray r);
-	ray cast(ray r, std::default_random_engine& eng);
+	ray cast(ray r, std::mt19937_64& eng);
 
 	double get_refl();
 	double get_opac();
@@ -214,7 +216,7 @@ protected:
 	vettore radiance(ray r, int n_sample, int bounce, int ref=0, int H_prev=-1);
 
 	int strt_bnc;
-	std::default_random_engine eng;
+	std::mt19937_64 eng;
 
 public:
 	scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double));
