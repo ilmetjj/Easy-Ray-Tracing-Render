@@ -4,7 +4,7 @@
 
 The aim of this project is to creat a program able to render a scene with 3D objects using a ray tracing algorithm.
 
-![Image](Images/image_p_9.000000.png)
+![Image](Images/image_p_12.000000.png)
 
 ## Content of the library
 
