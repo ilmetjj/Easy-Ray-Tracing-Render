@@ -129,7 +129,7 @@ double l_point::intersect(ray r){
 
 	return t1 < t2 ? t1 : t2;
 	*/
-	r.d.normalize();
+//	r.d.normalize();
 	double u, e;
 	vettore h=pos-r.o;
 	u=h*r.d;
@@ -158,7 +158,7 @@ double l_point::intersect(ray r){
 
 }
 vettore l_point::shade(vettore p, vettore n){
-	vettore r = /*normalize*/(pos - p);
+	vettore r = normalize(pos - p);
 	double t=pow(dist(p,pos),2);
 	return color * ((r * n) * (I * soft))/t;
 }
@@ -189,7 +189,7 @@ vettore sun::shade(vettore p, vettore n){
 
 object::object(vettore _color, double _refl, double _opac, double _emit, entity e): entity(e), color(_color), refl(_refl), opac(_opac), emit(_emit){}
 ray object::reflect(ray r){
-	r.d.normalize();
+//	r.d.normalize();
 	vettore P = r.point(intersect(r));
 	vettore n = normal(r);
 	double t;
@@ -202,23 +202,41 @@ ray object::reflect(ray r){
 	s.d = normalize(2 * Q - r.o - P);
 	return s;
 }
-ray object::cast(ray r, std::mt19937_64& eng){
-	double x=0, y=0, z=0;
-	vettore N, v(0,0,0);
-	N=normal(r).dir();
+ray object::cast(ray r, std::mt19937_64& eng){/**/
+	vettore N=normal(r);
 
-    std::uniform_real_distribution<double> distr(-1, 1);
-	std::uniform_real_distribution<double> d_cos(0, M_PI_2);
 	std::uniform_real_distribution<double> d_unit(0,1);
 
-	do{
-		x=distr(eng);
-		y=distr(eng);
-		z=distr(eng);
-		v=vettore(x,y,z);
-	}while(v.mod()>1 or v.dir()*N.dir()<=d_unit(eng)/*cos(d_cos(eng))*/);
-	
-	return ray(r.point(intersect(r)), normalize(v));
+//	double R = sqrt(d_unit(eng)), th = 2 * M_PI * d_unit(eng);
+//	double dx=R*cos(th), dy=R*sin(th);
+//	double h_sq = 1 - dx *dx - dy *dy ;
+//	double h = sqrt(h_sq>0?h_sq:0);
+
+	double R = sqrt(d_unit(eng)), th = 2 * M_PI * d_unit(eng);
+	double dx=R*cos(th), dy=R*sin(th);
+	double dz=sqrt(1-dx*dx-dy*dy);
+
+	vettore vx=(N!=vettore(1,0,0) and N!=vettore(-1,0,0))?N%vettore(1,0,0):N%vettore(0,1,0);
+	vettore vy=N%vx;
+
+	return ray(r.point(intersect(r)), (vx * dx + vy * dy + N * dz));
+/*	double x = 0, y = 0, z = 0;
+	vettore N, v(0, 0, 0);
+	N = normal(r).dir();
+
+	std::uniform_real_distribution<double> distr(-1, 1);
+	std::uniform_real_distribution<double> d_cos(0, M_PI_2);
+	std::uniform_real_distribution<double> d_unit(0, 1);
+
+	do
+	{
+		x = distr(eng);
+		y = distr(eng);
+		z = distr(eng);
+		v = vettore(x, y, z);
+	} while (v.mod() > 1 or v.dir() * N.dir() <= d_unit(eng) /*cos(d_cos(eng))*//*);
+
+	return ray(r.point(intersect(r)), normalize(v));*/
 }
 
 double object::get_refl(){return refl;}
@@ -230,7 +248,7 @@ vettore object::get_color(){return color;}
 
 sphere::sphere(double _R, vettore _color, double _refl, double _opac, double _emit, entity e):object(_color, _refl, _opac, _emit, e), R(_R){}
 double sphere::intersect(ray r){
-	r.d.normalize();
+//	r.d.normalize();
 	double u, e;
 	vettore h=pos-r.o;
 	u=h*r.d;
@@ -258,7 +276,7 @@ double sphere::intersect(ray r){
 	}
 }
 vettore sphere::normal(ray r){
-	r.d.normalize();
+//	r.d.normalize();
 	vettore p=r.point(intersect(r));
 	return normalize(p - pos);
 }
@@ -269,7 +287,7 @@ plane::plane(vettore _N, vettore _color, double _refl, double _opac, double _emi
 	N.normalize();
 }
 double plane::intersect(ray r){
-	r.d.normalize();
+//	r.d.normalize();
 
 	double num = (pos - r.o) * N;
 	double den = r.d * N;
@@ -283,7 +301,7 @@ double plane::intersect(ray r){
 	return t;
 }
 vettore plane::normal(ray r){
-	return normalize(N);
+	return /*normalize*/(N);
 }
 
 /*Scene*/
@@ -489,7 +507,8 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 		else if(obj[H]->get_opac()==1){
 			vettore sum=vettore(0,0,0);
 			
-			int n_smp=(n_sample*pow(double(bounce+ref)/strt_bnc,strt_bnc)>min_smp?n_sample*pow(double(bounce+ref)/strt_bnc,strt_bnc):min_smp);
+			int n_smp=n_sample*pow(double(bounce+ref)/strt_bnc,strt_bnc);
+			n_smp= n_smp>min_smp?n_smp:min_smp;
 			for(int i=0; i<n_smp; i++){
 				vettore get_col=vettore(0,0,0);
 				
@@ -498,7 +517,7 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 				get_col = get_col.per(obj[H]->get_color() / 255);
 				sum=sum+get_col;
 			}
-			sum=sum*(double(M_PI*double(2))/double(n_smp));
+			sum=sum*(double(M_PI /* *double(2) */ )/double(n_smp));
 			
 			color=sum;
 		}

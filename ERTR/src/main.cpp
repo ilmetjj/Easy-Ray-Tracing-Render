@@ -24,7 +24,7 @@ int main(/*int argc, char** argv*/){
 
 	plane p(vettore(0,1,0), vettore(80,80,200), 0,1,0, entity(vettore(0,-10,0)));
 
-	l_point l(5,vettore(200,200,200),5,entity(vettore(20,30,20)));
+	l_point l(5,vettore(200,200,200),10,entity(vettore(20,30,20)));
 
 	A.add_obj(s);
 	A.add_obj(q);
@@ -36,7 +36,7 @@ int main(/*int argc, char** argv*/){
 	for(double i=0; i<3; i+=0.01){
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
 		A.rend_img(file, 20, i);
-		A.rend_img_p(file_p, 20, i, 1000, 5);
+		A.rend_img_p(file_p, 50, i, 100, 5);
 		cout<<i<<" "<<flush;
 	}
 

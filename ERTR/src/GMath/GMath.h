@@ -42,6 +42,7 @@ public:
 	bool operator<(const vettore obj) const;
 	bool operator>(const vettore obj) const;
 	bool operator==(const vettore obj) const;
+	bool operator!=(const vettore obj) const;
 
 	string print() const;
 	string print(string type) const;

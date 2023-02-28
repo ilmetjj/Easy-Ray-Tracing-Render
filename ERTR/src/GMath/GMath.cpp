@@ -142,6 +142,10 @@ bool vettore::operator>(const vettore obj) const{
 bool vettore::operator==(const vettore obj) const{
 	return (x == obj.x && y == obj.y && z == obj.z);
 }
+bool vettore::operator!=(const vettore obj) const
+{
+	return (x != obj.x or y != obj.y or z != obj.z);
+}
 
 string vettore::print() const{
 	stringstream a;

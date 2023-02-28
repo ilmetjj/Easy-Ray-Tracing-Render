@@ -22,7 +22,7 @@ using namespace std;
 #define soft 1
 #define term_filt 0.01
 #define sun_appr 0.9
-#define min_smp 100
+#define min_smp 5
 #define s_b_p 3
 #define t_min 1e-7
 
