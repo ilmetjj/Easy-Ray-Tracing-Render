@@ -207,43 +207,18 @@ ray object::cast(ray r, std::mt19937_64& eng){
 	vettore N, v(0,0,0);
 	N=normal(r).dir();
 
-
     std::uniform_real_distribution<double> distr(-1, 1);
 	std::uniform_real_distribution<double> d_cos(0, M_PI_2);
+	std::uniform_real_distribution<double> d_unit(0,1);
 
-
-/*
-	e1=double(rand())/RAND_MAX;
-	e2=double(rand())/RAND_MAX;
-	if(abs(N*dx)!=1){
-		NP=dx;
-	}
-	else if(abs(N*dx)!=1){
-		NP=dy;
-	}
-	else{
-		NP=dz;
-	}
-	NP2=N%NP;
-	NP=NP2%NP;
-	v=NP*sqrt(1-pow(e1,2))*cos(2*M_PI*e2)+NP2*sqrt(1-pow(e1,2))*sin(2*M_PI*e2)+NP*e1;
-*/	
-	do{/*
-		x=double(rand())/RAND_MAX*2-1;
-		y=double(rand())/RAND_MAX*2-1;
-		z=double(rand())/RAND_MAX*2-1;
-	*/	
+	do{
 		x=distr(eng);
 		y=distr(eng);
 		z=distr(eng);
 		v=vettore(x,y,z);
-	}while(v.mod()>1 or v.dir()*N.dir()<=cos(d_cos(eng)));
+	}while(v.mod()>1 or v.dir()*N.dir()<=d_unit(eng)/*cos(d_cos(eng))*/);
 	
-
-
-
 	return ray(r.point(intersect(r)), normalize(v));
-
 }
 
 double object::get_refl(){return refl;}
@@ -514,12 +489,12 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 		else if(obj[H]->get_opac()==1){
 			vettore sum=vettore(0,0,0);
 			
-			int n_smp=(n_sample*pow((bounce+ref)/strt_bnc,s_b_p)>min_smp?n_sample*pow((bounce+ref)/strt_bnc,s_b_p):min_smp);
+			int n_smp=(n_sample*pow(double(bounce+ref)/strt_bnc,strt_bnc)>min_smp?n_sample*pow(double(bounce+ref)/strt_bnc,strt_bnc):min_smp);
 			for(int i=0; i<n_smp; i++){
 				vettore get_col=vettore(0,0,0);
 				
 				s=obj[H]->cast(r, eng);
-				get_col=radiance(s,n_sample,n_smp>min_smp?bounce-1:0,0,H)/* *(s.d.normalize()*obj[H]->normal(r).normalize())*/;
+				get_col=radiance(s,n_sample,bounce-1,0,H)/* *(s.d.normalize()*obj[H]->normal(r).normalize())*/;
 				get_col = get_col.per(obj[H]->get_color() / 255);
 				sum=sum+get_col;
 			}
