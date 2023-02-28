@@ -35,8 +35,8 @@ int main(/*int argc, char** argv*/){
 
 	for(double i=0; i<3; i+=0.01){
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
-		A.rend_img(file, 20, i);
-		A.rend_img_p(file_p, 50, i, 100, 5);
+		A.rend_img(file, 100, i);
+		A.rend_img_p(file_p, 100, i, 1000, 5);
 		cout<<i<<" "<<flush;
 	}
 
