@@ -8,8 +8,9 @@
 using namespace std;
 
 void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
-{
-
+{/*
+  vettore m(20*sin(7*n)+20, 20*cos(7*n)+30, 5*cos(7*n)+20);
+  lig[0]->move_to(m);*/
 }
 
 int main(/*int argc, char** argv*/){
@@ -24,7 +25,7 @@ int main(/*int argc, char** argv*/){
 
 	plane p(vettore(0,1,0), vettore(80,80,200), 0,1,0, entity(vettore(0,-10,0)));
 
-	l_point l(5,vettore(200,200,200),10,entity(vettore(20,30,20)));
+	l_point l(5,vettore(200,200,200),10,entity(vettore(30,30,10)));
 
 	A.add_obj(s);
 	A.add_obj(q);
@@ -33,11 +34,17 @@ int main(/*int argc, char** argv*/){
 
 	system("mkdir rendering2");
 
-	for(double i=0; i<3; i+=0.01){
+	int size=100, sample=50, bounce=10;
+	for(double i=7; i<7.1; i+=0.05){
+		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
-		A.rend_img(file, 100, i);
-		A.rend_img_p(file_p, 100, i, 1000, 5);
-		cout<<i<<" "<<flush;
+		A.rend_img(file, size, i);
+		A.rend_img_p(file_p, size, i, sample, bounce);
+		for(int j=1; j<1000; j++){
+			cout<<i<<"("<<j<<")"<<endl;
+			A.upgr_img_p(file_p, size, i, sample, bounce, j);
+		}
+		
 	}
 
 	return 0;

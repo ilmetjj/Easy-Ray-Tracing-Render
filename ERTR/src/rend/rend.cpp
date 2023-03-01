@@ -13,6 +13,21 @@ void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsi
 		std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 }
 
+void decodeOneStep(const char *filename, std::vector<unsigned char> &image) {
+//	std::vector<unsigned char> image; // the raw pixels
+	unsigned width, height;
+
+	// decode
+	unsigned error = lodepng::decode(image, width, height, filename);
+
+	// if there's an error, display it
+	if (error)
+		std::cout << "decoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
+
+	// the pixels are now in the vector "image", 4 bytes per pixel, ordered
+	// RGBARGBA..., use it as texture, draw it, ...
+}
+
 /*Ray*/
 ray::ray(vettore _o, vettore _d):o(_o), d(_d){
 	d.normalize();
@@ -202,7 +217,7 @@ ray object::reflect(ray r){
 	s.d = normalize(2 * Q - r.o - P);
 	return s;
 }
-ray object::cast(ray r, std::mt19937_64& eng){/**/
+ray object::cast(ray r, std::mt19937_64& eng){
 	vettore N=normal(r);
 
 	std::uniform_real_distribution<double> d_unit(0,1);
@@ -234,9 +249,22 @@ ray object::cast(ray r, std::mt19937_64& eng){/**/
 		y = distr(eng);
 		z = distr(eng);
 		v = vettore(x, y, z);
-	} while (v.mod() > 1 or v.dir() * N.dir() <= d_unit(eng) /*cos(d_cos(eng))*//*);
+	} while (v.mod() > 1 or v.dir() * N.dir() <= 0); // d_unit(eng) );//cos(d_cos(eng)));
 
-	return ray(r.point(intersect(r)), normalize(v));*/
+	return ray(r.point(intersect(r)), normalize(v));*//*
+
+	vettore N=normal(r);
+
+	std::uniform_real_distribution<double> d_unit(0,1);
+
+	double e1=d_unit(eng), e2=d_unit(eng);
+	double dx=cos(2*M_PI*e2)*sqrt(1-e1*e1), dy=sin(2*M_PI*e2)*sqrt(1-e1*e1), dz=e1;
+
+	vettore vx=(N!=vettore(1,0,0) and N!=vettore(-1,0,0))?N%vettore(1,0,0):N%vettore(0,1,0);
+	vettore vy=N%vx;
+
+	return ray(r.point(intersect(r)), (vx * dx + vy * dy + N * dz));*/
+
 }
 
 double object::get_refl(){return refl;}
@@ -513,11 +541,11 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 				vettore get_col=vettore(0,0,0);
 				
 				s=obj[H]->cast(r, eng);
-				get_col=radiance(s,n_sample,bounce-1,0,H)/* *(s.d.normalize()*obj[H]->normal(r).normalize())*/;
+				get_col=radiance(s,n_sample,bounce-1,ref,H);// *(s.d*obj[H]->normal(r));
 				get_col = get_col.per(obj[H]->get_color() / 255);
 				sum=sum+get_col;
 			}
-			sum=sum*(double(M_PI /* *double(2) */ )/double(n_smp));
+			sum=sum*(double(M_PI)/double(n_smp));
 			
 			color=sum;
 		}
@@ -656,6 +684,7 @@ void scene::rend_img_p(string file, double scale, double n,  int n_sample, int b
 
 	vector<vettore> vec;
 	vec=rend_p(width, height, n_sample, bounce);
+	image.resize(width * height * 4);
 
 	cout<<"ended"<<endl;;
 	for(int i=0; i<vec.size(); i++){
@@ -663,6 +692,29 @@ void scene::rend_img_p(string file, double scale, double n,  int n_sample, int b
 		image[4 * i + 1] = vec[i].get_y() < 255 ? vec[i].get_y() : 255;
 		image[4 * i + 2] = vec[i].get_z() < 255 ? vec[i].get_z() : 255;
 		image[4 * i + 3] = 255;
+	}
+
+	encodeOneStep(file.c_str(), image, width, height);
+}
+
+void scene::upgr_img_p(string file, double scale, double n, int n_sample, int bounce, int n_past) {
+	move(cam, obj, lig, n);
+
+	unsigned width = cam.width() * scale, height = cam.height() * scale;
+	std::vector<unsigned char> image;
+	
+	decodeOneStep(file.c_str(), image);
+
+	vector<vettore> vec;
+	vec = rend_p(width, height, n_sample, bounce);
+
+	cout << "ended" << endl;
+	;
+	for (int i = 0; i < vec.size(); i++) {
+			image[4 * i + 0] = ((image[4*i+0]*n_past)+(vec[i].get_x() < 255 ? vec[i].get_x() : 255))/(n_past+1);
+			image[4 * i + 1] = ((image[4*i+1]*n_past)+(vec[i].get_y() < 255 ? vec[i].get_y() : 255))/(n_past+1);
+			image[4 * i + 2] = ((image[4*i+2]*n_past)+(vec[i].get_z() < 255 ? vec[i].get_z() : 255))/(n_past+1);
+			image[4 * i + 3] = 255;
 	}
 
 	encodeOneStep(file.c_str(), image, width, height);

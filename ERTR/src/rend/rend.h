@@ -27,6 +27,7 @@ using namespace std;
 #define t_min 1e-7
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
+void decodeOneStep(const char *filename, std::vector<unsigned char> &image);
 
 //structures
 struct ray;
@@ -228,6 +229,7 @@ public:
 	void rend_term(int slp_t=100, double dn=0.01, double nf=10, double ni=0);
 
 	void rend_img_p(string file="render.png", double scale=100, double n=1,  int n_sample=100, int bounce=3);
+	void upgr_img_p(string file="render.png", double scale=100, double n=1,  int n_sample=100, int bounce=3, int n_past=1);
 };
 
 #endif
