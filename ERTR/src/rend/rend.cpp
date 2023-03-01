@@ -231,8 +231,8 @@ ray object::cast(ray r, std::mt19937_64& eng){
 	double dx=R*cos(th), dy=R*sin(th);
 	double dz=sqrt(1-dx*dx-dy*dy);
 
-	vettore vx=(N!=vettore(1,0,0) and N!=vettore(-1,0,0))?N%vettore(1,0,0):N%vettore(0,1,0);
-	vettore vy=N%vx;
+	vettore vx=dir((N!=vettore(1,0,0) and N!=vettore(-1,0,0))?N%vettore(1,0,0):N%vettore(0,1,0));
+	vettore vy=dir(N%vx);
 
 	return ray(r.point(intersect(r)), (vx * dx + vy * dy + N * dz));
 /*	double x = 0, y = 0, z = 0;
