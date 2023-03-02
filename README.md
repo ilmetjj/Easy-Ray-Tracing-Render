@@ -42,5 +42,8 @@ In order to use the library:
 All the entities (camera, objects and lights) have movement and rotation methods that can be used to animate the scene in the movement function
 
 ![Image](Images/image_p_11.000000.png)
-![Image](Images/image_p_17.000000.png)
 ![Image](Images/image_p_16.000000.png)
+![Image](Images/image_p_17.000000.png)
+![Image](Images/image_p_18.000000.png)
+![Image](Images/image_p_19.000000.png)
+![Image](Images/image_p_20.000000.png)
