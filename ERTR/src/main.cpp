@@ -14,7 +14,7 @@ void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
 }
 
 int main(/*int argc, char** argv*/){
-	camera c(7,13,100);
+	camera c(25,15,100);
 	c.move_to(vettore(0,200,-200));
 	c.point_to(vettore(5,5,20));
 
@@ -34,13 +34,13 @@ int main(/*int argc, char** argv*/){
 
 	system("mkdir rendering2");
 
-	int size=50, sample=50, bounce=5;
-	for(double i=7.1; i<7.5; i+=0.05){
+	int size=100, sample=100, bounce=10;
+	for(double i=7.3; i<7.5; i+=0.05){
 		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
 		A.rend_img(file, size, i);
 		A.rend_img_p(file_p, size, i, sample, bounce);
-		for(int j=1; j<1000; j++){
+		for(int j=1; j<500; j++){
 			cout<<i<<"("<<j<<")"<<endl;
 			A.upgr_img_p(file_p, size, i, sample, bounce, j);
 		}
