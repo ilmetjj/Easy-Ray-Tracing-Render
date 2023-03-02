@@ -7,40 +7,41 @@
 
 using namespace std;
 
-void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n)
-{/*
-  vettore m(20*sin(7*n)+20, 20*cos(7*n)+30, 5*cos(7*n)+20);
-  lig[0]->move_to(m);*/
+void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n) {
+
 }
 
 int main(/*int argc, char** argv*/){
-	camera c(25,15,100);
+	camera c(25,15,75);
 	c.move_to(vettore(0,200,-200));
-	c.point_to(vettore(5,5,20));
+	c.point_to(vettore(5,5,30));
 
 	scene A(c, move);
 
 	sphere s(5,vettore(80,200,80),0,1,0,entity(vettore(0,5,20)));
-	sphere q(5,vettore(80,200,80),1,0,0,entity(vettore(10,5,40)));
+	sphere q(5,vettore(255,255,255),1,0,0,entity(vettore(20,10,30)));
 
 	plane p(vettore(0,1,0), vettore(80,80,200), 0,1,0, entity(vettore(0,-10,0)));
+	plane p2(vettore(1,0,-2), vettore(255,100,100), 1, 0, 0, entity(-80,0,0));
 
 	l_point l(5,vettore(200,200,200),10,entity(vettore(30,30,10)));
 
 	A.add_obj(s);
 	A.add_obj(q);
 	A.add_obj(p);
+	A.add_obj(p2);
 	A.add_lig(l);
+
 
 	system("mkdir rendering2");
 
-	int size=100, sample=100, bounce=10;
-	for(double i=7.3; i<7.5; i+=0.05){
+	int size=100, sample=50, bounce=10;
+	for(double i=0.5; i<1; i++){
 		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
-		A.rend_img(file, size, i);
+	//	A.rend_img(file, size, i);
 		A.rend_img_p(file_p, size, i, sample, bounce);
-		for(int j=1; j<500; j++){
+		for(int j=1; j<100; j++){
 			cout<<i<<"("<<j<<")"<<endl;
 			A.upgr_img_p(file_p, size, i, sample, bounce, j);
 		}

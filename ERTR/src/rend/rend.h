@@ -24,7 +24,7 @@ using namespace std;
 #define sun_appr 0.9
 #define min_smp 5
 #define s_b_p 3
-#define t_min 1e-7
+#define t_min 1e-5
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 void decodeOneStep(const char *filename, std::vector<unsigned char> &image);

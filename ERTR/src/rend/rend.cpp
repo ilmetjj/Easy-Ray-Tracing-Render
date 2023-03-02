@@ -531,6 +531,7 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 		if(obj[H]->get_refl()>0){
 			s=obj[H]->reflect(r);
 			color=radiance(s,n_sample, bounce-1,ref+1,H);
+			color = color.per(obj[H]->get_color() / 255);
 		}
 		else if(obj[H]->get_opac()==1){
 			vettore sum=vettore(0,0,0);
