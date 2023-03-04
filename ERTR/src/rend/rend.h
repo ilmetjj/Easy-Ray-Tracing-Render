@@ -24,7 +24,7 @@ using namespace std;
 #define sun_appr 0.9
 #define min_smp 5
 #define s_b_p 3
-#define t_min 1e-5
+#define t_min 1e-10
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
 void decodeOneStep(const char *filename, std::vector<unsigned char> &image);
@@ -149,7 +149,7 @@ class object : public entity
 protected:
 	double refl, opac, emit;
 	vettore color;
-
+	double n;
 public:
 	object(vettore _color=vettore(255,255,255), double _refl=0, double _opac=0, double _emit=0, entity e=entity());
 
@@ -157,13 +157,14 @@ public:
 	virtual vettore normal(ray r)=0;
 	
 	ray reflect(ray r);
-//	ray trapass(ray r);
+	ray trapass(ray r, double n2);
 	ray cast(ray r, std::mt19937_64& eng);
 
 	double get_refl();
 	double get_opac();
 	double get_emit();
 	vettore get_color();
+	double get_n();
 };
 
 class sphere : public object{
@@ -218,7 +219,7 @@ protected:
 
 	int strt_bnc;
 	std::mt19937_64 eng;
-
+	double n_glob;
 public:
 	scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<light *> &, double));
 	void set_cam(camera &c);

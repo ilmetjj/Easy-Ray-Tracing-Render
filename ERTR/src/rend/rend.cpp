@@ -202,22 +202,29 @@ vettore sun::shade(vettore p, vettore n){
 }
 /*Object*/
 
-object::object(vettore _color, double _refl, double _opac, double _emit, entity e): entity(e), color(_color), refl(_refl), opac(_opac), emit(_emit){}
+object::object(vettore _color, double _refl, double _opac, double _emit, entity e): entity(e), color(_color), refl(_refl), opac(_opac), emit(_emit), n(1.5){}
 ray object::reflect(ray r){
+	ray s;
+
 //	r.d.normalize();
 	vettore P = r.point(intersect(r));
+	s.o = P;
+
+
 	vettore n = normal(r);
 	double t;
 
 	t = (n * (r.o - P)) / (n * n);
 	vettore Q = P + (n * t);
 
-	ray s;
-	s.o=P;
+	
 	s.d = normalize(2 * Q - r.o - P);
 	return s;
 }
 ray object::cast(ray r, std::mt19937_64& eng){
+	ray s;
+	s.o = r.point(intersect(r));
+
 	vettore N=normal(r);
 
 	std::uniform_real_distribution<double> d_unit(0,1);
@@ -234,7 +241,10 @@ ray object::cast(ray r, std::mt19937_64& eng){
 	vettore vx=dir((N!=vettore(1,0,0) and N!=vettore(-1,0,0))?N%vettore(1,0,0):N%vettore(0,1,0));
 	vettore vy=dir(N%vx);
 
-	return ray(r.point(intersect(r)), (vx * dx + vy * dy + N * dz));
+	
+	
+	s.d=(vx * dx + vy * dy + N * dz);	
+	return s;
 /*	double x = 0, y = 0, z = 0;
 	vettore N, v(0, 0, 0);
 	N = normal(r).dir();
@@ -267,10 +277,57 @@ ray object::cast(ray r, std::mt19937_64& eng){
 
 }
 
+ray object::trapass(ray r, double n_ext){
+	ray s;
+	vettore P=r.point(intersect(r)), N=normal(r);
+	s.o=P;
+
+	vettore dx, dy, dz;
+	double lx, lz;
+	double n1, n2;
+	if(N*r.d<0){
+		dz=N*(-1);
+		n1=n_ext;
+		n2=n;
+	}
+	else{
+		dz = N;
+		n1=n;
+		n2=n_ext;
+	}
+	dy = dir(dz % r.d);
+	dx = dir(dy % dz);
+
+	double sin1, sin2;
+	sin1=sqrt(1-pow(r.d*N,2));
+	sin2=sin1*n1/n2;
+
+	lx=sin2;
+	lz=sqrt(1-lx*lx);
+
+	s.d=dx*lx+dz*lz;
+/*
+	cout<<" r.o= "<<r.o.print()<<flush;
+	cout<<" r.d= "<<r.d.print()<<flush;
+	cout<<" n1= "<<n1<<" n2= "<<n2<<flush;
+	cout << " s.o= " << s.o.print() << flush;
+	cout << " s.d= " << s.d.print() << flush;
+	cout << " dx= " << dx.print() << flush;
+	cout << " dy= " << dy.print() << flush;
+	cout << " dz= " << dz.print() << flush;
+	cout << " lx= " << lx << flush;
+	cout << " lz= " << lz << flush;
+	cout << " sin1= " << sin1 << flush;
+	cout << " sin2= " << sin2 << flush;
+*/
+	return s;
+}
+
 double object::get_refl(){return refl;}
 double object::get_opac(){return opac;}
 double object::get_emit(){return emit;}
 vettore object::get_color(){return color;}
+double object::get_n(){return n;}
 
 /*Sphere*/
 
@@ -338,7 +395,7 @@ scene::scene(camera _cam, void (*_move)(camera &, vector<object *> &, vector<lig
 	srand(time(NULL));
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 	eng=mt19937_64(seed);
-	
+	n_glob=1;
 }
 void scene::set_cam(camera &c) {cam = c;}
 void scene::add_obj(object &o){obj.push_back(&o);}
@@ -525,13 +582,48 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 	if(hit_l){
 		color= lig[H]->get_color()*lig[H]->get_I();
 	}
-	else if(T>0 and bounce>0 and H!=H_prev){
+	else if(T>0 and bounce>0){
 		ray s;
+		vettore get_col;
 
 		if(obj[H]->get_refl()>0){
 			s=obj[H]->reflect(r);
-			color=radiance(s,n_sample, bounce-1,ref+1,H);
-			color = color.per(obj[H]->get_color() / 255);
+			get_col=radiance(s,n_sample, bounce-1,ref+1,H);
+			get_col = get_col.per(obj[H]->get_color() / 255);
+			color=color+get_col;
+		}
+		else if (obj[H]->get_opac() == 0 and obj[H]->get_refl() == 0 and obj[H]->get_emit()==1){
+			
+			double n1=1, n2=1, R, T, R0, cos_th;
+			cos_th = obj[H]->normal(r) * r.d;
+			bool intern=false;
+			if(cos_th<0){
+				n1=n_glob;
+				n2=obj[H]->get_n();
+				cos_th=0-cos_th;
+			}
+			else{
+				n2 = n_glob;
+				n1 = obj[H]->get_n();
+				intern=true;
+			}
+			R0=pow((n1-n2)/(n1+n2),2);
+			R=R0+(1-R0)*pow(1-cos_th,5);
+			T=1-R;
+
+	//		cout<<" R0= "<<R0<<" R= "<<R<<" T "<<T<<flush;
+
+//			if(R)
+			if(!intern){
+				s=obj[H]->reflect(r);
+				get_col = R * radiance(s, n_sample, bounce - 1, ref + 1, H);
+				get_col = get_col.per(obj[H]->get_color() / 255);
+				color=color+get_col;
+			}
+			s=obj[H]->trapass(r, n_glob);
+			get_col = T * radiance(s, n_sample, bounce - 1, ref + 1, H);
+			get_col = get_col.per(obj[H]->get_color() / 255);
+			color = color + get_col;
 		}
 		else if(obj[H]->get_opac()==1){
 			vettore sum=vettore(0,0,0);
@@ -539,7 +631,7 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 			int n_smp=n_sample*pow(double(bounce+ref)/strt_bnc,strt_bnc);
 			n_smp= n_smp>min_smp?n_smp:min_smp;
 			for(int i=0; i<n_smp; i++){
-				vettore get_col=vettore(0,0,0);
+				get_col=vettore(0,0,0);
 				
 				s=obj[H]->cast(r, eng);
 				get_col=radiance(s,n_sample,bounce-1,ref,H);// *(s.d*obj[H]->normal(r));
@@ -548,7 +640,7 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 			}
 			sum=sum*(double(M_PI)/double(n_smp));
 			
-			color=sum;
+			color=color+sum;
 		}
 	}
 	else if(T>0 and bounce>0 and H==H_prev){
