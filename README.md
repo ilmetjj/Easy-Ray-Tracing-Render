@@ -47,3 +47,4 @@ All the entities (camera, objects and lights) have movement and rotation methods
 ![Image](Images/image_p_18.000000.png)
 ![Image](Images/image_p_19.000000.png)
 ![Image](Images/image_p_20.000000.png)
+![Image](Images/image_p_21.000000.png)
