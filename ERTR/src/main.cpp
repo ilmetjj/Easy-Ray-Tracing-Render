@@ -44,7 +44,7 @@ int main(/*int argc, char** argv*/){
 
 	system("mkdir rendering2");
 
-	int size=50, sample=5, bounce=30;
+	int size=20, sample=10, bounce=20;
 	for(double i=0; i<1; i+=1){
 		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
