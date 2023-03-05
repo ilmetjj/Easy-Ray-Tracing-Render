@@ -13,44 +13,43 @@ void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n) {
 
 int main(/*int argc, char** argv*/){
 
-	camera c(25,15,75);
-	c.move_to(vettore(0,200,-200));
-	c.point_to(vettore(10,0,20));
+	camera c(20, 15, 50);
+	c.move_to(vettore(0, 200, -200));
+	c.point_to(vettore(0, 0, 20));
 
 	scene A(c, move);
 
-	sphere s(5,vettore(80,200,80),0,1,0,entity(vettore(0,5,20)));
-	sphere q(5,vettore(255,255,255),1,0,0,entity(vettore(20,10,30)));
-	sphere g(5,vettore(255,100,100),0,0,1,entity(vettore(0,0,0)));
-	sphere t(10, vettore(255, 255, 255), 0, 0, 1, entity(vettore(20, 20, 0)));
+	sphere s(10, vettore(200, 100, 200), 0, 1, 0, entity(vettore(0, 1, 20)));
+	sphere s2(5, vettore(200, 200, 200), 0, 1, 0, entity(vettore(20, 10, 20)));
+	sphere q(10, vettore(100, 255, 255), 1, 0, 0, entity(vettore(25, 1, 35)));
+	plane q2(vettore(1,0,-2), vettore(100, 100, 100), 1, 0, 0, entity(vettore(-20, 11, 30)));
+	sphere g(10, vettore(100, 200, 100), 0, 0, 1, entity(vettore(5, 1, -10)));
+	sphere g2(5, vettore(200, 200, 100), 0, 0, 1, entity(vettore(30, -4, 10)));
+	sphere s3(10, vettore(200, 100, 100), 0, 1, 0, entity(vettore(-20, 1, -10)));
 
-	plane p(vettore(0,1,0), vettore(80,80,200), 0,1,0, entity(vettore(0,-10,0)));
-//	plane p2(vettore(1,0,-2), vettore(255,100,100), 1, 0, 0, entity(-80,0,0));
+	plane p(vettore(0, 1, 0), vettore(200, 200, 200), 0, 1, 0, entity(vettore(0, -10, 0)));
 
-	l_point l(5,vettore(200,200,200),10,entity(vettore(30,30,10)));
+	l_point l(5, vettore(200, 200, 200), 25*M_PI, entity(vettore(30, 30, 20)));
 
 	A.add_obj(s);
+	A.add_obj(s2);
 	A.add_obj(q);
+	A.add_obj(q2);
 	A.add_obj(p);
 	A.add_obj(g);
-//	A.add_obj(t);
-//	A.add_obj(p2);
+	A.add_obj(g2);
+	A.add_obj(s3);
 	A.add_lig(l);
 
 
 	system("mkdir rendering2");
 
-	int size=100, sample=100, bounce=10;
+	int size=50, sample=5, bounce=30;
 	for(double i=0; i<1; i+=1){
 		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
 	//	A.rend_img(file, size, i);
-		A.rend_img_p(file_p, size, i, sample, bounce);
-		for(int j=1; j<40; j++){
-			cout<<i<<"("<<j<<")"<<endl;
-			A.upgr_img_p(file_p, size, i, sample, bounce, j);
-		}
-		
+		A.upgr_img_p(file_p, size, i, sample, bounce, 100000);
 	}
 
 	return 0;

@@ -4,7 +4,7 @@
 
 The aim of this project is to creat a program able to render a scene with 3D objects using a ray tracing algorithm.
 
-![Image](Images/image_p_12.000000.png)
+![Image](Images/image_p_23.000000.png)
 
 ## Content of the library
 
@@ -42,6 +42,7 @@ In order to use the library:
 All the entities (camera, objects and lights) have movement and rotation methods that can be used to animate the scene in the movement function
 
 ![Image](Images/image_p_11.000000.png)
+![Image](Images/image_p_12.000000.png)
 ![Image](Images/image_p_16.000000.png)
 ![Image](Images/image_p_17.000000.png)
 ![Image](Images/image_p_18.000000.png)

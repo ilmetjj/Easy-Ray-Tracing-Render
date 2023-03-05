@@ -614,12 +614,12 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 	//		cout<<" R0= "<<R0<<" R= "<<R<<" T "<<T<<flush;
 
 //			if(R)
-			if(!intern){
+//			if(!intern){
 				s=obj[H]->reflect(r);
 				get_col = R * radiance(s, n_sample, bounce - 1, ref + 1, H);
 				get_col = get_col.per(obj[H]->get_color() / 255);
 				color=color+get_col;
-			}
+//			}
 			s=obj[H]->trapass(r, n_glob);
 			get_col = T * radiance(s, n_sample, bounce - 1, ref + 1, H);
 			get_col = get_col.per(obj[H]->get_color() / 255);
@@ -638,7 +638,7 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 				get_col = get_col.per(obj[H]->get_color() / 255);
 				sum=sum+get_col;
 			}
-			sum=sum*(double(M_PI)/double(n_smp));
+			sum=sum*(1/double(n_smp));
 			
 			color=color+sum;
 		}
@@ -790,25 +790,38 @@ void scene::rend_img_p(string file, double scale, double n,  int n_sample, int b
 	encodeOneStep(file.c_str(), image, width, height);
 }
 
-void scene::upgr_img_p(string file, double scale, double n, int n_sample, int bounce, int n_past) {
+void scene::upgr_img_p(string file, double scale, double n, int n_sample, int bounce, int iter) {
 	move(cam, obj, lig, n);
 
 	unsigned width = cam.width() * scale, height = cam.height() * scale;
 	std::vector<unsigned char> image;
+	image.resize(width * height * 4);
 	
-	decodeOneStep(file.c_str(), image);
+//	decodeOneStep(file.c_str(), image);
 
-	vector<vettore> vec;
+	vector<vettore> vec, temp;
 	vec = rend_p(width, height, n_sample, bounce);
-
-	cout << "ended" << endl;
-	;
+	cout << "ended 0 " << endl;
 	for (int i = 0; i < vec.size(); i++) {
-			image[4 * i + 0] = ((image[4*i+0]*n_past)+(vec[i].get_x() < 255 ? vec[i].get_x() : 255))/(n_past+1);
-			image[4 * i + 1] = ((image[4*i+1]*n_past)+(vec[i].get_y() < 255 ? vec[i].get_y() : 255))/(n_past+1);
-			image[4 * i + 2] = ((image[4*i+2]*n_past)+(vec[i].get_z() < 255 ? vec[i].get_z() : 255))/(n_past+1);
-			image[4 * i + 3] = 255;
+		image[4 * i + 0] = vec[i].get_x() < 255 ? vec[i].get_x() : 255;
+		image[4 * i + 1] = vec[i].get_y() < 255 ? vec[i].get_y() : 255;
+		image[4 * i + 2] = vec[i].get_z() < 255 ? vec[i].get_z() : 255;
+		image[4 * i + 3] = 255;
 	}
-
 	encodeOneStep(file.c_str(), image, width, height);
+	cout << "ended 0 " << endl;
+
+	for(int j=1; j<iter; j++){
+		temp = rend_p(width, height, n_sample, bounce);
+		cout << "ended "<< j << endl;
+		for (int i = 0; i < vec.size(); i++) {
+			vec[i]=(vec[i]*j+temp[i])/(j+1);
+			image[4 * i + 0] = (vec[i].get_x() < 255 ? vec[i].get_x() : 255);
+			image[4 * i + 1] = (vec[i].get_y() < 255 ? vec[i].get_y() : 255);
+			image[4 * i + 2] = (vec[i].get_z() < 255 ? vec[i].get_z() : 255);
+			image[4 * i + 3] = 255;
+		}
+		temp.clear();
+		encodeOneStep(file.c_str(), image, width, height);
+	}
 }

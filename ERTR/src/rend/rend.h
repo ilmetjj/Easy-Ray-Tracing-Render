@@ -21,8 +21,8 @@ using namespace std;
 
 #define soft 1
 #define term_filt 0.01
-#define sun_appr 0.9
-#define min_smp 5
+#define sun_appr 0.999
+#define min_smp 1
 #define s_b_p 3
 #define t_min 1e-10
 
@@ -230,7 +230,7 @@ public:
 	void rend_term(int slp_t=100, double dn=0.01, double nf=10, double ni=0);
 
 	void rend_img_p(string file="render.png", double scale=100, double n=1,  int n_sample=100, int bounce=3);
-	void upgr_img_p(string file="render.png", double scale=100, double n=1,  int n_sample=100, int bounce=3, int n_past=1);
+	void upgr_img_p(string file="render.png", double scale=100, double n=1,  int n_sample=100, int bounce=3, int n_iter=1);
 };
 
 #endif
