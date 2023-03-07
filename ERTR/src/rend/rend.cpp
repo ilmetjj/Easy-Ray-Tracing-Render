@@ -217,16 +217,17 @@ ray object::reflect(ray r){/*
 
 	ray s;
 	vettore P = r.point(intersect(r));
-	s.o = P;
 	vettore N = normal(r);
-	s.d= r.d-(2*r.d*N)*N;
+	s.o = P+(N*div);
+	s.d= r.d-((2*r.d*N)*N);
 	return s;
 }
 ray object::cast(ray r, std::mt19937_64& eng){
 	ray s;
-	s.o = r.point(intersect(r));
-
 	vettore N=normal(r);
+
+	s.o = r.point(intersect(r))+(N*div);
+
 
 	std::uniform_real_distribution<double> d_unit(0,1);
 
@@ -281,7 +282,7 @@ ray object::cast(ray r, std::mt19937_64& eng){
 ray object::trapass(ray r, double n_ext){
 	ray s;
 	vettore P=r.point(intersect(r)), N=normal(r);
-	s.o=P;
+	
 /*
 	vettore dx, dy, dz;
 	double lx, lz;
@@ -320,7 +321,9 @@ ray object::trapass(ray r, double n_ext){
 	}
 	double cos1,cos2;
 	cos1=r.d*N; cos2=sqrt(1-pow(n1/n2,2)*(1-pow(cos1,2)));
-	s.d=(n1/n2)*r.d+(cos2-n1/n2*cos1)*N;
+	
+	s.o=P+(N*div);
+	s.d=((n1/n2)*r.d)+((cos2-((n1/n2)*cos1))*N);
 
 /*
 	cout<<" r.o= "<<r.o.print()<<flush;
