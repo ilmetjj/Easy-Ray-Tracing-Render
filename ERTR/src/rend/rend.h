@@ -24,7 +24,7 @@ using namespace std;
 #define sun_appr 0.999
 #define min_smp 1
 #define s_b_p 3
-#define t_min 1e-10
+#define t_min 1e-7
 #define div 1e-5
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);
@@ -32,7 +32,7 @@ void decodeOneStep(const char *filename, std::vector<unsigned char> &image);
 
 //structures
 struct ray;
-//	struct triangle;
+struct triangle;
 
 //basic entity
 class entity;
@@ -62,15 +62,15 @@ struct ray{
 	vettore point(double t);
 };
 
-/*
+
 struct triangle{
 	vettore a, b, c;
 	vettore n;
-	bool parallel();
-	bool do_intersect();
-	vettore intersect();
+//	bool parallel();
+//	bool do_intersect();
+	double intersect(ray r);
 };
-*/
+
 
 class entity{
 protected:
@@ -189,20 +189,22 @@ public:
 	vettore normal(ray r);
 };
 
-/*
+
 class mesh : public object
 {
 protected:
+	int n_tr;
+	vettore max, min;
+	vector<triangle> box;
 	vector<triangle> v_tr;
+	int H_lst;
 public:
-	mesh(vector<triangle> v_tr, );
-	void add_triangle(triangle);
+	mesh(string file, double scale = 1, vettore _color = vettore(255, 255, 255), double _refl = 0, double _opac = 0, double _emit = 0, entity e = entity());
 
-	ray cast(vettore p);
 	double intersect(ray r);
-	vettore shade(vettore p, vettore n);
+	vettore normal(ray r);
 };
-*/
+
 
 class scene
 {

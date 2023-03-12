@@ -36,6 +36,36 @@ vettore ray::point(double t){
 	return o + t * d;
 }
 
+/*Triangle*/
+
+double triangle::intersect(ray r){
+	vettore edge1, edge2, h, s, q;
+	float A, f, u, v;
+	edge1 = b - a;
+	edge2 = c - a;
+	h = r.d%edge2;
+	A = edge1*h;
+	if (A > -t_min && A < t_min)
+		return 0;    // This ray is parallel to this triangle.
+	f = 1.0 / A;
+	s = r.o - a;
+	u = f * s*h;
+	if (u < 0.0 || u > 1.0)
+		return 0;
+	q = s%edge1;
+	v = f * r.d*q;
+	if (v < 0.0 || u + v > 1.0)
+		return 0;
+	// At this stage we can compute t to find out where the intersection point is on the line.
+	float t = f * edge2*q;
+	if (t > t_min) // ray intersection
+	{
+		return t;
+	}
+	else // This means that there is a line intersection but not a ray intersection.
+		return 0;
+}
+
 /*Entity*/
 
 entity::entity(vettore _pos , vettore _dx, vettore _dy, vettore _dz):pos(_pos), dx(_dx), dy(_dy), dz(_dz) {
@@ -406,6 +436,195 @@ double plane::intersect(ray r){
 }
 vettore plane::normal(ray r){
 	return /*normalize*/(N);
+}
+
+/*Mesh*/
+
+mesh::mesh(string file, double scale, vettore _color, double _refl, double _opac, double _emit, entity e):object(_color, _refl, _opac, _emit, e){
+	ifstream fin(file, ios::binary);
+
+	uint8_t header[80];
+	fin.seekg(0, ios::beg);
+	fin.read((char*)&header, sizeof(header));
+	cout << header << endl;
+	uint32_t N_tr;
+	fin.read((char*)&N_tr, sizeof(N_tr));
+	cout << N_tr << endl;
+	n_tr=N_tr;
+
+	double X=0,x=0,Y=0,y=0,Z=0,z=0;
+	for (size_t i = 0; i < N_tr; i++)
+	{
+		triangle t;
+		_Float32 N[3], A[3], B[3], C[3];
+		uint16_t end;
+		fin.read((char*)&N, sizeof(N));
+		fin.read((char*)&A, sizeof(A));
+		fin.read((char*)&B, sizeof(B));
+		fin.read((char*)&C, sizeof(C));
+		fin.read((char*)&end, sizeof(end));
+		t.n = vettore(N[0], N[1], N[2]);
+		t.a = vettore(A[0], A[1], A[2])*scale;
+		t.b = vettore(B[0], B[1], B[2])*scale;
+		t.c = vettore(C[0], C[1], C[2])*scale;
+
+		if(i==0){
+			X = A[0];
+			Y = A[1];
+			Z = A[2];
+			x = A[0];
+			y = A[1];
+			z = A[2];
+		}
+
+		if (A[0] > X)
+			X = A[0];
+		if (B[0] > X)
+			X = B[0];
+		if (C[0] > X)
+			X = C[0];
+		if (A[0] < x)
+			x = A[0];
+		if (B[0] < x)
+			x = B[0];
+		if (C[0] < x)
+			x = C[0];
+		
+		if (A[1] > Y)
+			Y = A[1];
+		if (B[1] > Y)
+			Y = B[1];
+		if (C[1] > Y)
+			Y = C[1];
+		if (A[1] < y)
+			y = A[1];
+		if (B[1] < y)
+			y = B[1];
+		if (C[1] < y)
+			y = C[1];
+
+		if (A[2] > Z)
+			Z = A[2];
+		if (B[2] > Z)
+			Z = B[2];
+		if (C[2] > Z)
+			Z = C[2];
+		if (A[2] < z)
+			z = A[2];
+		if (B[2] < z)
+			z = B[2];
+		if (C[2] < z)
+			z = C[2];
+
+		v_tr.push_back(t);
+		cout << i << endl;
+		cout << "N: " << N[0] << " " << N[1] << " " << N[2] << " ; " << v_tr[i].n.print() << endl;
+		cout << "A: " << A[0] << " " << A[1] << " " << A[2] << " ; " << v_tr[i].a.print() << endl;
+		cout << "B: " << B[0] << " " << B[1] << " " << B[2] << " ; " << v_tr[i].b.print() << endl;
+		cout << "C: " << C[0] << " " << C[1] << " " << C[2] << " ; " << v_tr[i].c.print() << endl;
+		cout << end << endl;
+	}
+	max=vettore(X,Y,Z)*scale;
+	min=vettore(x,y,z)*scale;
+	cout<<"max: "<<max.print()<<endl;
+	cout<<"min: "<<min.print()<<endl;
+
+	triangle t;
+
+	t.n = vettore(0, 0, 1);
+	t.a = max;
+	t.b = vettore(min.get_x(), max.get_y(), max.get_z());
+	t.c = vettore(min.get_x(), min.get_y(), max.get_z());
+	box.push_back(t);
+	t.b = t.c;
+	t.c = vettore(max.get_x(), min.get_y(), max.get_z());
+	box.push_back(t);
+
+	t.n = vettore(0, -1, 0);
+	t.a = vettore(max.get_x(), min.get_y(), min.get_z());
+	t.b = vettore(max.get_x(), min.get_y(), max.get_z());
+	t.c = vettore(min.get_x(), min.get_y(), max.get_z());
+	box.push_back(t);
+	t.b = t.c;
+	t.c = min;
+	box.push_back(t);
+
+	t.n = vettore(-1, 0, 0);
+	t.a = min;
+	t.b = vettore(min.get_x(), min.get_y(), max.get_z());
+	t.c = vettore(min.get_x(), max.get_y(), max.get_z());
+	box.push_back(t);
+	t.b = t.c;
+	t.c = vettore(min.get_x(), max.get_y(), min.get_z());
+	box.push_back(t);
+
+	t.n = vettore(0, 0, -1);
+	t.a = vettore(min.get_x(), max.get_y(), min.get_z());
+	t.b = vettore(max.get_x(), max.get_y(), min.get_z());
+	t.c = vettore(max.get_x(), min.get_y(), min.get_z());
+	box.push_back(t);
+	t.b = t.c;
+	t.c = min;
+	box.push_back(t);
+
+	t.n = vettore(1, 0, 0);
+	t.a = vettore(max.get_x(), max.get_y(), min.get_z());
+	t.b = max;
+	t.c = vettore(max.get_x(), min.get_y(), max.get_z());
+	box.push_back(t);
+	t.b = t.c;
+	t.c = vettore(max.get_x(), min.get_y(), min.get_z());
+	box.push_back(t);
+
+	t.n = vettore(0, 1, 0);
+	t.a = vettore(min.get_x(), max.get_y(), min.get_z());
+	t.b = vettore(min.get_x(), max.get_y(), max.get_z());
+	t.c = max;
+	box.push_back(t);
+	t.b = t.c;
+	t.c = vettore(max.get_x(), max.get_y(), min.get_z());
+	box.push_back(t);
+}
+double mesh::intersect(ray r){
+	double T=0, H=0;
+	for(size_t i=0; i<12; i++){
+		double t=box[i].intersect(r);
+
+		if (t > t_min)
+		{
+			if (t < T || T <= t_min)
+			{
+				T = t;
+			}
+		}
+	}
+	if(T<=t_min){
+		return 0;
+	}
+	else{
+		T=0;
+		for (size_t i = 0; i < v_tr.size(); i++) {
+			double t = v_tr[i].intersect(r);
+			if (t > t_min)
+			{
+				if (t < T || T <= t_min)
+				{
+					T = t;
+					H = i;
+				}
+			}
+		}
+		if (T <= t_min) {
+			return 0;
+		}
+		else{
+			H_lst=H;
+			return T;
+		}
+	}
+}
+vettore mesh::normal(ray r){
+	return v_tr[H_lst].n;
 }
 
 /*Scene*/
