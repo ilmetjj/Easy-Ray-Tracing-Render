@@ -23,48 +23,48 @@ int main(/*int argc, char** argv*/){
 	sphere s(10, vettore(200, 100, 200), 0, 1, 0, entity(vettore(0, 0, 0)));
 	sphere s2(5, vettore(200, 200, 200), 0, 1, 0, entity(vettore(20, 10, 20)));
 	sphere q(10, vettore(100, 255, 255), 1, 0, 0, entity(vettore(25, 1, 35)));
-	plane q2(vettore(1,0,-2), vettore(100, 100, 100), 1, 0, 0, entity(vettore(-20, 11, 30)));
+	plane q2(vettore(-1,0,2), vettore(100, 100, 100), 1, 0, 0, entity(vettore(-20, 10, 30)));
 	sphere g(10, vettore(100, 200, 100), 0, 0, 1, entity(vettore(5, 1, -10)));
 	sphere g2(5, vettore(200, 200, 100), 0, 0, 1, entity(vettore(30, -4, 10)));
 	sphere s3(10, vettore(200, 100, 100), 0, 1, 0, entity(vettore(-20, 1, -10)));
 
-	plane p(vettore(0, 1, 0), vettore(200, 200, 200), 0, 1, 0, entity(vettore(0, -10, 0)));
+	plane p(vettore(0, 0, -1), vettore(200, 200, 200), 0, 1, 0, entity(vettore(0, 0, 0)));
 
-	l_point l(10, vettore(200, 200, 200), 25, entity(vettore(30, 30, 20)));
-	l_point l1(10, vettore(200, 200, 100), 25, entity(vettore(30, 30, -20)));
-	l_point l2(10, vettore(200, 100, 200), 25, entity(vettore(30, -30, 20)));
-	l_point l3(10, vettore(200, 100, 100), 25, entity(vettore(30, -30, -20)));
-	l_point l4(10, vettore(100, 200, 200), 25, entity(vettore(-30, 30, 20)));
-	l_point l5(10, vettore(100, 200, 100), 25, entity(vettore(-30, 30, -20)));
-	l_point l6(10, vettore(100, 100, 200), 25, entity(vettore(-30, -30, 20)));
-	l_point l7(10, vettore(100, 100, 100), 25, entity(vettore(-30, -30, -20)));
+	l_point l(5, vettore(200, 200, 200), 100, entity(vettore(50, 60, 20)));
+	l_point l1(5, vettore(200, 200, 100), 100, entity(vettore(50, 60, -20)));
+	l_point l2(5, vettore(200, 100, 200), 100, entity(vettore(50, -60, 20)));
+	l_point l3(5, vettore(200, 100, 100), 100, entity(vettore(50, -60, -20)));
+	l_point l4(5, vettore(100, 200, 200), 100, entity(vettore(-50, 60, 20)));
+	l_point l5(5, vettore(100, 200, 100), 100, entity(vettore(-50, 60, -20)));
+	l_point l6(5, vettore(100, 100, 200), 100, entity(vettore(-50, -60, 20)));
+	l_point l7(5, vettore(100, 100, 100), 100, entity(vettore(-50, -60, -20)));
 
 //	A.add_obj(s);
 //	A.add_obj(s2);
 //	A.add_obj(q);
 //	A.add_obj(q2);
-//	A.add_obj(p);
+	A.add_obj(p);
 //	A.add_obj(g);
 //	A.add_obj(g2);
 //	A.add_obj(s3);
-//	A.add_lig(l);
+	A.add_lig(l);
 	A.add_lig(l1);
 	A.add_lig(l2);
 	A.add_lig(l3);
 	A.add_lig(l4);
 	A.add_lig(l5);
 	A.add_lig(l6);
-//	A.add_lig(l7);
+	A.add_lig(l7);
 
 
 
-	mesh cube("../stl/monkey.stl", 10, vettore(200, 200, 200), 0, 1, 0, entity(vettore(0, 0, 0)));
+	mesh cube("../stl/ring.stl", 20, vettore(255, 255, 255), 1, 0, 0, entity(vettore(0, 0, 0)));
 	A.add_obj(cube);
 
 
 	system("mkdir rendering2");
 
-	int size=20, sample=1, bounce=20;
+	int size=25, sample=10, bounce=20;
 	for(double i=0; i<1; i+=1){
 		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
