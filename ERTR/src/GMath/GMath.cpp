@@ -66,16 +66,28 @@ double vettore::get_z() const{
 vettore vettore::operator+(const vettore obj) const{
 	return vettore(x + obj.x, y + obj.y, z + obj.z);
 }
+vettore vettore::operator+=(const vettore obj) const {
+	return vettore(x + obj.x, y + obj.y, z + obj.z);
+}
 vettore vettore::operator-(const vettore obj) const{
 	return vettore(x - obj.x, y - obj.y, z - obj.z);
 }
+vettore vettore::operator-=(const vettore obj) const {
+	return vettore(x - obj.x, y - obj.y, z - obj.z);
+}
 vettore vettore::operator*(double n) const{
+	return vettore(n * x, n * y, n * z);
+}
+vettore vettore::operator*=(double n) const {
 	return vettore(n * x, n * y, n * z);
 }
 vettore operator*(double n, const vettore obj){
 	return vettore(n * obj.x, n * obj.y, n * obj.z);
 }
 vettore vettore::operator/(double n) const{
+	return vettore(x / n, y / n, z / n);
+}
+vettore vettore::operator/=(double n) const {
 	return vettore(x / n, y / n, z / n);
 }
 double vettore::operator*(const vettore obj) const{

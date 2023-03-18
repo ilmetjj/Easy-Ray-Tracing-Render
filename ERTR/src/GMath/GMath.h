@@ -26,10 +26,14 @@ public:
 	double get_z()const ;
 	
 	vettore operator+(const vettore obj) const;
+	vettore operator+=(const vettore obj) const;
 	vettore operator-(const vettore obj) const;
+	vettore operator-=(const vettore obj) const;
 	vettore operator*(double n) const;
+	vettore operator*=(double n) const;
 	friend vettore operator*(double n, const vettore obj);
 	vettore operator/(double n) const;
+	vettore operator/=(double n) const;
 	double operator*(const vettore obj) const;
 	vettore operator%(const vettore obj) const;
 	vettore operator*(const vettore v[3])const;

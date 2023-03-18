@@ -79,11 +79,11 @@ protected:
 public:
 	entity(vettore _pos = vettore(0, 0, 0), vettore _dx=vettore(1,0,0), vettore _dy=vettore(0,1,0), vettore _dz=vettore(0,0,1));
 	
-	void move(vettore m);
-	void move_to(vettore m);
-	void rotate_abs(vettore r);
-	void rotate_to(vettore _dx, vettore _dy, vettore _dz);
-	void point_to(vettore p, vettore up=vettore(0,1,0));
+	virtual void move(vettore m);
+	virtual void move_to(vettore m);
+	virtual void rotate_abs(vettore r);
+	virtual void rotate_to(vettore _dx, vettore _dy, vettore _dz);
+	virtual void point_to(vettore p, vettore up=vettore(0,1,0));
 
 	vettore get_pos();
 	vettore get_dx();
@@ -203,6 +203,11 @@ public:
 
 	double intersect(ray r);
 	vettore normal(ray r);
+
+	void move(vettore m);
+	void move_to(vettore m);
+	void rotate_abs(vettore r);
+//	void rotate_to(vettore _dx, vettore _dy, vettore _dz);
 };
 
 

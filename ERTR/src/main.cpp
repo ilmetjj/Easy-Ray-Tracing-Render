@@ -8,13 +8,13 @@
 using namespace std;
 
 void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n) {
-
+	obj[0]->rotate_abs(vettore(0,n,0));
 }
 
 int main(/*int argc, char** argv*/){
 
 	camera c(15, 15, 150);
-	c.move_to(vettore(0, -200, 200));
+	c.move_to(vettore(0, 0,-200));
 //	c.point_to(vettore(0, 0, 20));
 	c.point_to(vettore(0, 0, 0));
 
@@ -43,7 +43,7 @@ int main(/*int argc, char** argv*/){
 //	A.add_obj(s2);
 //	A.add_obj(q);
 //	A.add_obj(q2);
-	A.add_obj(p);
+//	A.add_obj(p);
 //	A.add_obj(g);
 //	A.add_obj(g2);
 //	A.add_obj(s3);
@@ -58,17 +58,17 @@ int main(/*int argc, char** argv*/){
 
 
 
-	mesh cube("../stl/ring.stl", 20, vettore(255, 255, 255), 1, 0, 0, entity(vettore(0, 0, 0)));
+	mesh cube("../stl/monkey.stl", 5, vettore(255, 255, 255), 0, 1, 0, entity(vettore(0, 0, 0)));
 	A.add_obj(cube);
 
 
 	system("mkdir rendering2");
 
-	int size=25, sample=10, bounce=20;
-	for(double i=0; i<1; i+=1){
+	int size=50, sample=1, bounce=5;
+	for(double i=0; i<2*M_PI; i+=0.25){
 		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
-		A.upgr_img_p(file_p, size, i, sample, bounce, 100000);
+		A.upgr_img_p(file_p, size, i, sample, bounce, 500);
 	}
 
 	return 0;

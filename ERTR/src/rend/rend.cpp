@@ -584,6 +584,8 @@ mesh::mesh(string file, double scale, vettore _color, double _refl, double _opac
 	t.b = t.c;
 	t.c = vettore(max.get_x(), max.get_y(), min.get_z());
 	box.push_back(t);
+
+	rotate_abs(vettore(M_PI_2, 0, M_PI));
 }
 double mesh::intersect(ray r){
 	double T=0, H=0;
@@ -596,6 +598,7 @@ double mesh::intersect(ray r){
 			{
 				T = t;
 			}
+			break;
 		}
 	}
 	if(T<=t_min){
@@ -626,6 +629,113 @@ double mesh::intersect(ray r){
 vettore mesh::normal(ray r){
 	return v_tr[H_lst].n;
 }
+
+void mesh::move(vettore m){
+	for (size_t i = 0; i < v_tr.size(); i++)
+	{
+		v_tr[i].a+=m;
+		v_tr[i].b+=m;
+		v_tr[i].c+=m;
+	}
+	for (size_t i = 0; i < box.size(); i++)
+	{
+		box[i].a += m;
+		box[i].b += m;
+		box[i].c += m;
+	}
+	max+=m;
+	min+=m;	
+
+
+	pos+=m;
+}
+void mesh::move_to(vettore m) {
+	vettore n=m-pos;
+	for (size_t i = 0; i < v_tr.size(); i++)
+	{
+		v_tr[i].a += n;
+		v_tr[i].b += n;
+		v_tr[i].c += n;
+	}
+	for (size_t i = 0; i < box.size(); i++)
+	{
+		box[i].a += n;
+		box[i].b += n;
+		box[i].c += n;
+	}
+	max += n;
+	min += n;
+
+	pos=m;
+}
+void mesh::rotate_abs(vettore r){
+	if (r.get_x() != 0) {
+		vettore rx[3] = { vettore(1,0,0),vettore(0,cos(r.get_x()),-sin(r.get_x())),vettore(0,sin(r.get_x()),cos(r.get_x())) };
+		dx = dx * rx;
+		dy = dy * rx;
+		dz = dz * rx;
+
+		for (size_t i = 0; i < v_tr.size(); i++)
+		{
+			v_tr[i].a = v_tr[i].a*rx;
+			v_tr[i].b = v_tr[i].b*rx;
+			v_tr[i].c = v_tr[i].c*rx;
+		}
+		for (size_t i = 0; i < box.size(); i++)
+		{
+			box[i].a = box[i].a*rx;
+			box[i].b = box[i].b*rx;
+			box[i].c = box[i].c*rx;
+		}
+		max = max*rx;
+		min = min*rx;
+	}
+	if (r.get_y() != 0)
+	{
+		vettore ry[3] = { vettore(cos(r.get_y()), 0, sin(r.get_y())), vettore(0, 1, 0), vettore(-sin(r.get_y()), 0, cos(r.get_y())) };
+		dx = dx * ry;
+		dy = dy * ry;
+		dz = dz * ry;
+
+		for (size_t i = 0; i < v_tr.size(); i++)
+		{
+			v_tr[i].a = v_tr[i].a * ry;
+			v_tr[i].b = v_tr[i].b * ry;
+			v_tr[i].c = v_tr[i].c * ry;
+		}
+		for (size_t i = 0; i < box.size(); i++)
+		{
+			box[i].a = box[i].a * ry;
+			box[i].b = box[i].b * ry;
+			box[i].c = box[i].c * ry;
+		}
+		max = max * ry;
+		min = min * ry;
+	}
+	if (r.get_z() != 0)
+	{
+		vettore rz[3] = { vettore(cos(r.get_z()), -sin(r.get_z()), 0), vettore(sin(r.get_z()), cos(r.get_z()), 0), vettore(0, 0, 1) };
+		dx = dx * rz;
+		dy = dy * rz;
+		dz = dz * rz;
+
+		for (size_t i = 0; i < v_tr.size(); i++)
+		{
+			v_tr[i].a = v_tr[i].a * rz;
+			v_tr[i].b = v_tr[i].b * rz;
+			v_tr[i].c = v_tr[i].c * rz;
+		}
+		for (size_t i = 0; i < box.size(); i++)
+		{
+			box[i].a = box[i].a * rz;
+			box[i].b = box[i].b * rz;
+			box[i].c = box[i].c * rz;
+		}
+		max = max * rz;
+		min = min * rz;
+	}
+}
+void rotate_to(vettore _dx, vettore _dy, vettore _dz);
 
 /*Scene*/
 
