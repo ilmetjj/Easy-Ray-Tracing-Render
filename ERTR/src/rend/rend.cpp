@@ -589,7 +589,7 @@ mesh::mesh(string file, double scale, vettore _color, double _refl, double _opac
 }
 double mesh::intersect(ray r){
 	double T=0, H=0;
-	for(size_t i=0; i<12; i++){
+/*	for(size_t i=0; i<12; i++){
 		double t=box[i].intersect(r);
 
 		if (t > t_min)
@@ -604,7 +604,7 @@ double mesh::intersect(ray r){
 	if(T<=t_min){
 		return 0;
 	}
-	else{
+	else{*/
 		T=0;
 		for (size_t i = 0; i < v_tr.size(); i++) {
 			double t = v_tr[i].intersect(r);
@@ -624,7 +624,7 @@ double mesh::intersect(ray r){
 			H_lst=H;
 			return T;
 		}
-	}
+//	}
 }
 vettore mesh::normal(ray r){
 	return v_tr[H_lst].n;
@@ -934,13 +934,16 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 		ray s;
 		vettore get_col;
 
-		if(obj[H]->get_refl()>0){
+		if(obj[H]->get_emit()>0){
+			color = obj[H]->get_color()*obj[H]->get_emit();
+		}
+		else if(obj[H]->get_opac() == 1 and obj[H]->get_refl() == 1 and obj[H]->get_emit()==0){
 			s=obj[H]->reflect(r);
 			get_col=radiance(s,n_sample, bounce-1,ref+1,H);
 			get_col = get_col.per(obj[H]->get_color() / 255);
 			color=color+get_col;
 		}
-		else if (obj[H]->get_opac() == 0 and obj[H]->get_refl() == 0 and obj[H]->get_emit()==1){
+		else if (obj[H]->get_opac() == 0 and obj[H]->get_refl() == 0 and obj[H]->get_emit()==0){
 			
 			double n1=1, n2=1, R, T, R0, cos_th, sin_th;
 			cos_th = obj[H]->normal(r) * r.d;
@@ -977,7 +980,7 @@ vettore scene::radiance(ray r, int n_sample, int bounce, int ref, int H_prev){
 				color = color + get_col;
 			}
 		}
-		else if(obj[H]->get_opac()==1){
+		else if(obj[H]->get_opac() == 1 and obj[H]->get_refl() == 0 and obj[H]->get_emit()==0){
 			vettore sum=vettore(0,0,0);
 			
 			int n_smp=n_sample*pow(double(bounce+ref)/strt_bnc,strt_bnc);
