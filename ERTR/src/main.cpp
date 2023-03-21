@@ -61,7 +61,7 @@ int main(/*int argc, char** argv*/){
 	for(double i=0; i<1; i+=1){
 		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
-		A.upgr_img_p(file_p, size, i, sample, bounce, 500);
+		A.upgr_img_p(file_p, size, i, sample, bounce, 5000);
 	}
 
 	return 0;
