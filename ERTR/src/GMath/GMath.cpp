@@ -2,6 +2,8 @@
 
 using namespace std;
 
+
+
 /*vettore*/
 
 vettore::vettore(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
@@ -66,20 +68,26 @@ double vettore::get_z() const{
 vettore vettore::operator+(const vettore obj) const{
 	return vettore(x + obj.x, y + obj.y, z + obj.z);
 }
-vettore vettore::operator+=(const vettore obj) const {
-	return vettore(x + obj.x, y + obj.y, z + obj.z);
+void vettore::operator+=(const vettore obj){
+	x=x + obj.x;
+	y=y + obj.y;
+	z=z + obj.z;
 }
 vettore vettore::operator-(const vettore obj) const{
 	return vettore(x - obj.x, y - obj.y, z - obj.z);
 }
-vettore vettore::operator-=(const vettore obj) const {
-	return vettore(x - obj.x, y - obj.y, z - obj.z);
+void vettore::operator-=(const vettore obj){
+	x=x - obj.x;
+	y=y - obj.y;
+	z=z - obj.z;
 }
 vettore vettore::operator*(double n) const{
 	return vettore(n * x, n * y, n * z);
 }
-vettore vettore::operator*=(double n) const {
-	return vettore(n * x, n * y, n * z);
+void vettore::operator*=(double n){
+	x=n * x;
+	y=n * y;
+	z=n * z;
 }
 vettore operator*(double n, const vettore obj){
 	return vettore(n * obj.x, n * obj.y, n * obj.z);
@@ -87,8 +95,10 @@ vettore operator*(double n, const vettore obj){
 vettore vettore::operator/(double n) const{
 	return vettore(x / n, y / n, z / n);
 }
-vettore vettore::operator/=(double n) const {
-	return vettore(x / n, y / n, z / n);
+void vettore::operator/=(double n){
+	x=x / n;
+	y=y / n;
+	z=z / n;
 }
 double vettore::operator*(const vettore obj) const{
 	return x * obj.x + y * obj.y + z * obj.z;

@@ -9,6 +9,14 @@ class vettore;
 #include <sstream>
 #include <string>
 
+template <typename T> 
+int sgn(T val) {
+	if(val<0)
+		return -1;
+	else
+		return 1;
+}
+
 class vettore
 {
 	double x, y, z;
@@ -26,14 +34,14 @@ public:
 	double get_z()const ;
 	
 	vettore operator+(const vettore obj) const;
-	vettore operator+=(const vettore obj) const;
+	void operator+=(const vettore obj);
 	vettore operator-(const vettore obj) const;
-	vettore operator-=(const vettore obj) const;
+	void operator-=(const vettore obj);
 	vettore operator*(double n) const;
-	vettore operator*=(double n) const;
+	void operator*=(double n);
 	friend vettore operator*(double n, const vettore obj);
 	vettore operator/(double n) const;
-	vettore operator/=(double n) const;
+	void operator/=(double n);
 	double operator*(const vettore obj) const;
 	vettore operator%(const vettore obj) const;
 	vettore operator*(const vettore v[3])const;
