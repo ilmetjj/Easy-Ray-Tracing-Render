@@ -16,17 +16,17 @@ void move(camera &cam, vector<object *> &obj, vector<light *> &lig, double n) {
 int main(/*int argc, char** argv*/){
 
 	camera c(20, 20, 20);
-	c.move_to(vettore(-35, 0, 0));
+	c.move_to(vettore(-31, 0, 0));
 //	c.point_to(vettore(0, 0, 20));
 	c.point_to(vettore(0, 0, 0));
 
 	scene A(c, move);
 
 	mesh 
-	box0("../stl/box_part0.stl",10,vettore(255,255,255),0,1,0),
-	box1("../stl/box_part1.stl",10,vettore(255,255,255),0,0,100),
-	box2("../stl/box_part2.stl",10,vettore(255,50,50),0,1,0),
-	box3("../stl/box_part3.stl",10,vettore(50,255,50),0,1,0);
+	box0("../stl/box_part0.stl",10,vettore(200,200,200),0,1,0),
+	box1("../stl/box_part1.stl",10,vettore(255,255,255),0,0,25),
+	box2("../stl/box_part2.stl",10,vettore(200,50,50),0,1,0),
+	box3("../stl/box_part3.stl",10,vettore(50,200,50),0,1,0);
 
 	A.add_obj(box0);
 	A.add_obj(box1);
@@ -41,13 +41,13 @@ int main(/*int argc, char** argv*/){
 	A.add_obj(s1);
 	A.add_obj(s2);
 
-	mesh cube("../stl/cube.stl",2,vettore(50,50,255),0,0,0);
+	mesh cube("../stl/cube.stl",2,vettore(200,200,50),0,1,0);
 	cube.move(vettore(5,-5,-5));
 
-	mesh cube2("../stl/cube.stl",2,vettore(50,50,255),1,1,0);
+	mesh cube2("../stl/cube.stl",2,vettore(50,200,200),0,1,0);
 	cube2.move(vettore(5,-5,5));
 
-	mesh cube3("../stl/cube.stl",2,vettore(50,50,255),0,1,0);
+	mesh cube3("../stl/cube.stl",2,vettore(200,50,200),0,1,0);
 	cube3.move(vettore(5,-5,0));
 
 	A.add_obj(cube);
@@ -57,7 +57,7 @@ int main(/*int argc, char** argv*/){
 
 	system("mkdir rendering2");
 
-	int size=50, sample=1, bounce=15;
+	int size=100, sample=1, bounce=25;
 	for(double i=0; i<1; i+=1){
 		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";

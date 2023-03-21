@@ -573,7 +573,7 @@ void mesh::rotate_abs(vettore r){
 			v_tr[i].a = v_tr[i].a*rx;
 			v_tr[i].b = v_tr[i].b*rx;
 			v_tr[i].c = v_tr[i].c*rx;
-			v_tr[i].n = v_tr[i].n*rx;
+			v_tr[i].n = dir(v_tr[i].n*rx);
 		}
 		for (size_t i = 0; i < box.size(); i++)
 		{
@@ -597,7 +597,7 @@ void mesh::rotate_abs(vettore r){
 			v_tr[i].a = v_tr[i].a * ry;
 			v_tr[i].b = v_tr[i].b * ry;
 			v_tr[i].c = v_tr[i].c * ry;
-			v_tr[i].n = v_tr[i].n * ry;
+			v_tr[i].n = dir(v_tr[i].n * ry);
 		}
 		for (size_t i = 0; i < box.size(); i++)
 		{
@@ -621,7 +621,7 @@ void mesh::rotate_abs(vettore r){
 			v_tr[i].a = v_tr[i].a * rz;
 			v_tr[i].b = v_tr[i].b * rz;
 			v_tr[i].c = v_tr[i].c * rz;
-			v_tr[i].n = v_tr[i].n * rz;
+			v_tr[i].n = dir(v_tr[i].n * rz);
 		}
 		for (size_t i = 0; i < box.size(); i++)
 		{
@@ -779,7 +779,7 @@ vector<vettore> scene::rend_p(int width, int height, int n_sample, int bounce){
 
 	for (int i = 0; i < height; i++)
 	{
-		cout<<i<<":	"<<flush;
+//		cout<<i<<":	"<<flush;
 		for (int j = 0; j < width; j++)
 		{
 //			cout<<j<<" "<<flush;
@@ -788,7 +788,7 @@ vector<vettore> scene::rend_p(int width, int height, int n_sample, int bounce){
 			color=radiance(r,n_sample,bounce);
 			vec.push_back(color);
 		}
-		cout<<endl;
+//		cout<<endl;
 	}
 	return vec;
 }
