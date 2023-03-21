@@ -19,12 +19,12 @@
 
 using namespace std;
 
-#define soft 1
+#define soft 1.0
 #define term_filt 0.01
 #define sun_appr 0.999
 #define min_smp 1
 #define s_b_p 3
-#define t_min 1e-5
+#define t_min 1e-7
 #define div 1e-5
 
 void encodeOneStep(const char *filename, std::vector<unsigned char> &image, unsigned width, unsigned height);

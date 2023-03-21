@@ -40,7 +40,7 @@ vettore ray::point(double t){
 
 double triangle::intersect(ray r){
 	vettore edge1, edge2, h, s, q;
-	float A, f, u, v;
+	double A, f, u, v;
 	edge1 = b - a;
 	edge2 = c - a;
 	h = r.d%edge2;
@@ -57,7 +57,7 @@ double triangle::intersect(ray r){
 	if (v < 0.0 || u + v > 1.0)
 		return 0;
 	// At this stage we can compute t to find out where the intersection point is on the line.
-	float t = f * edge2*q;
+	double t = f * edge2*q;
 	if (t > t_min) // ray intersection
 	{
 		return t;
