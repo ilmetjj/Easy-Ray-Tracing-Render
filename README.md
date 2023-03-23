@@ -6,7 +6,7 @@ The aim of this project is to creat a program able to render a scene with 3D obj
 
 ![Image](Images/image_p_24.000000.png)
 
-![Image](Images/image_p_30.000000.png)
+![Image](Images/image_p_32.000000.png)
 
 ## Content of the library
 
