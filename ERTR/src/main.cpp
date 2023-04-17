@@ -23,8 +23,8 @@ int main(/*int argc, char** argv*/){
 	scene A(c, move);
 
 	mesh 
-	box0("../stl/box_part0.stl",10,vettore(200,200,200),0,1,0),
-	box1("../stl/box_part1.stl",10,vettore(255,255,255),0,0,25),
+	box0("../stl/box_part0.stl",10,vettore(255,255,255),0,1,0),
+	box1("../stl/box_part1.stl",10,vettore(255,255,255),0,0,50),
 	box2("../stl/box_part2.stl",10,vettore(200,50,50),0,1,0),
 	box3("../stl/box_part3.stl",10,vettore(50,200,50),0,1,0);
 
@@ -33,9 +33,9 @@ int main(/*int argc, char** argv*/){
 	A.add_obj(box2);	
 	A.add_obj(box3);
 
-	sphere s(2,vettore(200,200,200),0,1,0,entity(vettore(0,0,0)));
-	sphere s1(2,vettore(200,200,200),1,1,0,entity(vettore(0,0,5)));
-	sphere s2(2,vettore(200,200,200),0,0,0,entity(vettore(0,0,-5)));
+	sphere s(2,vettore(255,255,255),0,1,0,entity(vettore(0,0,0)));
+	sphere s1(2,vettore(255,255,255),1,1,0,entity(vettore(0,0,5)));
+	sphere s2(2,vettore(255,255,255),0,0,0,entity(vettore(0,0,-5)));
 
 	A.add_obj(s);
 	A.add_obj(s1);
@@ -57,7 +57,7 @@ int main(/*int argc, char** argv*/){
 
 	system("mkdir rendering2");
 
-	int size=100, sample=1, bounce=25;
+	int size=25, sample=1, bounce=5;
 	for(double i=0; i<1; i+=1){
 		cout<<i<<": "<<endl;
 		string file="rendering2/image"+std::to_string(i)+".png", file_p="rendering2/image_p_"+std::to_string(i)+".png";
